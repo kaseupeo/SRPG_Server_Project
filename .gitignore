@@ -73,3 +73,11 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 **/[Aa]ssets/[Ss]treamingAssets/aa.meta
 **/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+
+# C# .Net build
+[Bb]in/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
