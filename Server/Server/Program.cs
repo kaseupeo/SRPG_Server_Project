@@ -11,7 +11,9 @@ class Program
     private static void FlushRoom()
     {
         Room.Push(() => Room.Flush());
-        JobTimer.Instance.Push(FlushRoom, 250);
+        // MEMO : 패킷 전송 시간 밀리초
+        // 30 프레임 : 1000 / 30
+        JobTimer.Instance.Push(FlushRoom, 1000 / 30);
     }
     
     private static void Main(string[] args)

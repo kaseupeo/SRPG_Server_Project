@@ -4,11 +4,11 @@ using System.Net;
 using ServerCore;
 using UnityEngine;
 
-public class NetworkManager : MonoBehaviour
+public class NetworkManager
 {
     private ServerSession _session = new ServerSession();
 
-    private void Start()
+    public void Init()
     {
         // DNS (Domain Name System)
         string host = Dns.GetHostName();
@@ -20,7 +20,7 @@ public class NetworkManager : MonoBehaviour
         connector.Connect(endPoint, () => _session, 1);
     }
 
-    private void Update()
+    public void Update()
     {
         List<IPacket> packetList = PacketQueue.Instance.PopAll();
 

@@ -32,6 +32,7 @@ public class SendBuffer
 
     public SendBuffer(int chunkSize)
     {
+        // MEMO : 메모리 이슈(Large Object Heap: code that allocates a lot of memory in LOH)
         _buffer = new byte[chunkSize];
     }
     

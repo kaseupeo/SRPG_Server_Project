@@ -2,5 +2,74 @@
 <!-- C_ => 클라이언트에서 서버로 보내는 패킷 -->
 <!-- S_ => 서버에서 클라이언트로 보내는 패킷 -->
 <PDL>
+    <packet name="S_BroadcastEnterGame">
+        <int name="playerID"/>
+        <float name="X"/>
+        <float name="Y"/>
+        <float name="Z"/>
+    </packet>
+    <packet name="C_LeaveGame">
+    </packet>
+    <packet name="S_BroadcastLeaveGame">
+        <int name="playerID"/>
+    </packet>
+    <packet name="S_PlayerList">
+        <list name="player">
+            <bool name="isSelf"/>
+            <int name="playerID"/>
+            <float name="X"/>
+            <float name="Y"/>
+            <float name="Z"/>
+        </list>
+    </packet>
     
+<!--    <packet name="C_Move">-->
+<!--        <float name="X"/>-->
+<!--        <float name="Y"/>-->
+<!--        <float name="Z"/>-->
+<!--    </packet>-->
+    
+    <packet name="S_BroadcastMove">
+        <int name="playerID"/>
+        <float name="X"/>
+        <float name="Y"/>
+        <float name="Z"/>
+    </packet>
+    
+    <!-- 게임 시작 -->
+    <!-- 나중에 게임 시작과 턴 시작 분리해야 할듯 -->
+    <packet name="C_StartGame">
+        <int name="playerID"/>
+        <float name="X"/>
+        <float name="Y"/>
+        <float name="Z"/>
+    </packet>
+    
+    <!-- 이동할 수 있는 위치 리스트 -->
+    <packet name="S_ValidPosition">
+        <int name="playerID"/>
+        <list name="position">
+            <float name="X"/>
+            <float name="Y"/>
+            <float name="Z"/>
+        </list>
+    </packet>
+    
+    <!-- 좌표 선택 -->
+    <!-- 사실상 이동 패킷 -->
+    <packet name="C_ClickPosition">
+        <float name="X"/>
+        <float name="Y"/>
+        <float name="Z"/>
+    </packet>
+    
+    <!-- 이동 경로 리스트 -->
+    <packet name="S_Move">
+        <int name="playerID"/>
+        <list name="path">
+            <float name="X"/>
+            <float name="Y"/>
+            <float name="Z"/>
+        </list>
+    </packet>
 </PDL>

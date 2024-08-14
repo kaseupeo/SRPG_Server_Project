@@ -20,6 +20,15 @@ public class PacketManager
     public void Register()
     {
 
+        _makeFunc.Add((ushort)PacketID.C_LeaveGame, MakePacket<C_LeaveGame>);
+        _handler.Add((ushort)PacketID.C_LeaveGame, PacketHandler.C_LeaveGameHandler);
+
+        _makeFunc.Add((ushort)PacketID.C_StartGame, MakePacket<C_StartGame>);
+        _handler.Add((ushort)PacketID.C_StartGame, PacketHandler.C_StartGameHandler);
+
+        _makeFunc.Add((ushort)PacketID.C_ClickPosition, MakePacket<C_ClickPosition>);
+        _handler.Add((ushort)PacketID.C_ClickPosition, PacketHandler.C_ClickPositionHandler);
+
     }
     
     public void OnReceivePacket(PacketSession session, ArraySegment<byte> buffer, Action<PacketSession, IPacket> onReceiveCallback = null)
