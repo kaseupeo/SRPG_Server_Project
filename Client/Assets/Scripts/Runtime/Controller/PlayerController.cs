@@ -12,18 +12,18 @@ public class PlayerController : BaseController
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            C_StartGame startGamePacket = new C_StartGame();
-            startGamePacket.X = transform.position.x;
-            startGamePacket.Y = 0;
-            startGamePacket.Z = transform.position.z;
-            Managers.Network.Send(startGamePacket.Write());
+            C_PlayerAction actionPacket = new C_PlayerAction();
+            actionPacket.action = 0;
+            actionPacket.X = transform.position.x;
+            actionPacket.Y = 0;
+            actionPacket.Z = transform.position.z;
+            Managers.Network.Send(actionPacket.Write());
         }
         
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
+            if (Physics.Raycast(ray, out var hit))
             {
                 string pos = hit.collider.gameObject.name;
                 Vector3 pos2 = hit.collider.gameObject.transform.position;
@@ -31,24 +31,12 @@ public class PlayerController : BaseController
                 // Debug.Log($"name : {pos}, pos : {pos2}");
                 
                 // TODO : 이동할 수 있는 위치 중에서 선택 후 보내기
-                C_ClickPosition movePacket = new C_ClickPosition();
-                movePacket.X = pos2.x;
-                movePacket.Z = pos2.z;
-                Managers.Network.Send(movePacket.Write());
+                C_PlayerAction actionPacket = new C_PlayerAction();
+                actionPacket.action = 1;
+                actionPacket.X = pos2.x;
+                actionPacket.Z = pos2.z;
+                Managers.Network.Send(actionPacket.Write());
             }
         }
     }
-
-    // private void FixedUpdate()
-    // {
-    //     float moveX = Input.GetAxis("Horizontal");
-    //     float moveZ = Input.GetAxis("Vertical");
-    //
-    //     C_Move movePacket = new C_Move();
-    //
-    //     movePacket.X += moveX * 10 * Time.fixedDeltaTime + transform.position.x;
-    //     movePacket.Z += moveZ * 10 * Time.fixedDeltaTime + transform.position.z;
-    //     
-    //     Managers.Network.Send(movePacket.Write());
-    // }
 }

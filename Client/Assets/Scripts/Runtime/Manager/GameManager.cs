@@ -66,15 +66,7 @@ public class GameManager
         }
     }
 
-    public void Move(S_BroadcastMove packet)
-    {
-        if (_player.ID == packet.playerID)
-            _player.transform.position = new Vector3(packet.X, packet.Y, packet.Z);
-        else if (_otherPlayerDic.TryGetValue(packet.playerID, out var playerController))
-                playerController.transform.position = new Vector3(packet.X, packet.Y, packet.Z);
-    }
-
-    public void FindValidPosition(S_ValidPosition packet)
+    public void ShowMoveRange(S_MoveRange packet)
     {
         List<Cube> cubeList = GameObject.Find("MapGenerate").GetComponent<GenerateTileMap>().CubeList;
 
@@ -90,8 +82,9 @@ public class GameManager
             cube.MoveTile.SetActive(true);
     }
     
-    public void Move2(S_Move packet)
+    public void Move(S_Move packet)
     {
+        // TODO : 임시 
         if (_player.ID == packet.playerID)
             _player.transform.position = new Vector3(packet.pathList[0].X, packet.pathList[0].Y, packet.pathList[0].Z);
         else if (_otherPlayerDic.TryGetValue(packet.playerID, out var playerController))

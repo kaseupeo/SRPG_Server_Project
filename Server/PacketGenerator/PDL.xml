@@ -22,31 +22,28 @@
             <float name="Z"/>
         </list>
     </packet>
+        
+    <!-- TODO : 턴 관리 패킷 -->
     
-<!--    <packet name="C_Move">-->
-<!--        <float name="X"/>-->
-<!--        <float name="Y"/>-->
-<!--        <float name="Z"/>-->
-<!--    </packet>-->
     
-    <packet name="S_BroadcastMove">
-        <int name="playerID"/>
+<!--
+    패킷 이동 순서 
+    턴 시작 -> 플레이어 행동 및 좌표 
+        -> 이동 행동일 때 -> 이동 범위 리스트 -> 플레이어 행동 및 좌표 -> 이동 경로 리스트
+        -> 공격 행동일 때 -> 공격 범위 리스트 -> 플레이어 행동 및 좌표 -> 공격
+        
+-->
+    
+    <!-- 플레이어 행동 및 좌표 -->
+    <!-- 이동, 공격 등 -->
+    <packet name="C_PlayerAction">
+        <int name="action"/>
         <float name="X"/>
         <float name="Y"/>
         <float name="Z"/>
     </packet>
-    
-    <!-- 게임 시작 -->
-    <!-- 나중에 게임 시작과 턴 시작 분리해야 할듯 -->
-    <packet name="C_StartGame">
-        <int name="playerID"/>
-        <float name="X"/>
-        <float name="Y"/>
-        <float name="Z"/>
-    </packet>
-    
-    <!-- 이동할 수 있는 위치 리스트 -->
-    <packet name="S_ValidPosition">
+    <!-- 이동 범위 리스트 -->
+    <packet name="S_MoveRange">
         <int name="playerID"/>
         <list name="position">
             <float name="X"/>
@@ -54,15 +51,6 @@
             <float name="Z"/>
         </list>
     </packet>
-    
-    <!-- 좌표 선택 -->
-    <!-- 사실상 이동 패킷 -->
-    <packet name="C_ClickPosition">
-        <float name="X"/>
-        <float name="Y"/>
-        <float name="Z"/>
-    </packet>
-    
     <!-- 이동 경로 리스트 -->
     <packet name="S_Move">
         <int name="playerID"/>
@@ -71,5 +59,22 @@
             <float name="Y"/>
             <float name="Z"/>
         </list>
+    </packet>
+
+    <!-- 공격 범위 리스트 -->
+    <packet name="S_AttackRange">
+        <int name="playerID"/>
+        <list name="position">
+            <float name="X"/>
+            <float name="Y"/>
+            <float name="Z"/>
+        </list>
+    </packet>
+    <!-- 공격 -->
+    <packet name="S_Attack">
+        <int name="playerID"/>
+        <float name="X"/>
+        <float name="Y"/>
+        <float name="Z"/>
     </packet>
 </PDL>

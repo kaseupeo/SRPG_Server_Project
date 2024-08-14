@@ -72,24 +72,7 @@ public class GameRoom : IJobQueue
         Broadcast(leaveGame.Write());
     }
 
-    // public void Move(ClientSession session, C_Move packet)
-    // {
-    //     // 좌표 바뀌기
-    //     session.PosX = packet.X;
-    //     session.PosY = packet.Y;
-    //     session.PosZ = packet.Z;
-    //     
-    //     // 모두에게 알리기
-    //     S_BroadcastMove move = new S_BroadcastMove();
-    //     move.playerID = session.SessionID;
-    //     move.X = session.PosX;
-    //     move.Y = session.PosY;
-    //     move.Z = session.PosZ;
-    //
-    //     Broadcast(move.Write());
-    // }
-
-    public void FindValidPosition(ClientSession session, C_StartGame packet)
+    public void ShowMoveRange(ClientSession session, C_PlayerAction packet)
     {
         // TODO : 나중에 맵 만들면 바꾸기
         int[,] grid = new int[10, 10]
@@ -132,12 +115,13 @@ public class GameRoom : IJobQueue
         HashSet<(int, int, int)> list = pathFind.FindTile(map, ((int)packet.X,(int)packet.Y, (int)packet.Z), 5);
         session.PlayerData.ValidPosition = list;
 
-        S_ValidPosition validPosition = new S_ValidPosition();
+        
+        S_MoveRange validPosition = new S_MoveRange();
         validPosition.playerID = session.SessionID;
         
         foreach ((int x, int y, int z) tuple in list)
         {
-            validPosition.positionList.Add(new S_ValidPosition.Position()
+            validPosition.positionList.Add(new S_MoveRange.Position()
             {
                 X = tuple.x,
                 Y = tuple.y,
@@ -148,7 +132,7 @@ public class GameRoom : IJobQueue
         Broadcast(validPosition.Write());
     }
     
-    public void ClickPosition(ClientSession session, C_ClickPosition packet)
+    public void Move(ClientSession session, C_PlayerAction packet)
     {
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
 
