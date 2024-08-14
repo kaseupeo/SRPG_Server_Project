@@ -17,6 +17,7 @@ public class SessionManager
 
             ClientSession session = new ClientSession();
             session.SessionID = sessionID;
+            session.PlayerData = new PlayerData();
             _sessionDic.Add(sessionID, session);
 
             Console.WriteLine($"Connected : {sessionID}");

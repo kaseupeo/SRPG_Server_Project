@@ -80,12 +80,7 @@ public class GameManager
 
         foreach (Cube cube in cubeList) 
             cube.MoveTile.SetActive(false);
-
-        foreach (S_ValidPosition.Position position in packet.positionList)
-        {
-            Debug.Log($"({position.X}, {position.Z})");
-        }
-
+        
         var join = cubeList.Join(packet.positionList,
             cube => new Vector2Int((int)cube.transform.position.x, (int)cube.transform.position.z),
             move => new Vector2Int((int)move.X, (int)move.Z),

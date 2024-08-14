@@ -42,9 +42,9 @@ public class GameRoom : IJobQueue
             {
                 isSelf = (clientSession == session),
                 playerID = clientSession.SessionID,
-                X = clientSession.PosX,
-                Y = clientSession.PosY,
-                Z = clientSession.PosZ,
+                X = clientSession.PlayerData.Position.X,
+                Y = clientSession.PlayerData.Position.Y,
+                Z = clientSession.PlayerData.Position.Z,
             });
         }
 
@@ -116,56 +116,57 @@ public class GameRoom : IJobQueue
             // { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         };
 
-        Dictionary<(int, int), bool> map = new Dictionary<(int, int), bool>();
+        // TODO : 맵 정보 구현 후 다시 정리
+        Dictionary<(int, int, int), bool> map = new Dictionary<(int, int, int), bool>();
 
-        for (int i = 0; i < grid.GetLength(0); i++)
+        for (int x = 0; x < grid.GetLength(0); x++)
         {
-            for (int j = 0; j < grid.GetLength(1); j++)
+            for (int z = 0; z < grid.GetLength(1); z++)
             {
                 // 0이면 true (이동 가능), 1이면 false (장애물)
-                map[(i, j)] = grid[i, j] == 0;
+                map[(x, 0, z)] = grid[x, z] == 0;
             }
         }
         
-        PossibleMove possibleMove = new PossibleMove();
-        HashSet<(int, int)> list = possibleMove.FindTile(map, ((int)packet.X, (int)packet.Z), 5);
+        PathFind pathFind = new PathFind();
+        HashSet<(int, int, int)> list = pathFind.FindTile(map, ((int)packet.X,(int)packet.Y, (int)packet.Z), 5);
+        session.PlayerData.ValidPosition = list;
 
         S_ValidPosition validPosition = new S_ValidPosition();
         validPosition.playerID = session.SessionID;
-
-        foreach ((int x, int y) tuple in list)
+        
+        foreach ((int x, int y, int z) tuple in list)
         {
             validPosition.positionList.Add(new S_ValidPosition.Position()
             {
                 X = tuple.x,
-                Y = 0,
-                Z = tuple.y,
+                Y = tuple.y,
+                Z = tuple.z,
             });
-
-            Console.Write($"({tuple.x}, {tuple.y}), ");
         }
 
-        Console.WriteLine("!!!");
         Broadcast(validPosition.Write());
     }
     
     public void ClickPosition(ClientSession session, C_ClickPosition packet)
     {
-        // TODO : 이동 가능한 위치인지 체크
-        // TEST : 간단한 테스트를 위해 체크 생략
-        session.PosX = packet.X;
-        session.PosY = packet.Y;
-        session.PosZ = packet.Z;
+        (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
+
+        // 이동 가능한 위치인지 체크
+        if (!session.PlayerData.ValidPosition.Contains(position))
+            return;
         
+        session.PlayerData.Position = position;
+
         // TODO : 이동 가능하면 A* 알고리즘을 통해 경로 보내기
         // TEST : 간단한 테스트를 위해 받은 위치로 순간이동 시킴
         S_Move move = new S_Move();
         move.playerID = session.SessionID;
         move.pathList.Add(new S_Move.Path()
         {
-            X = session.PosX,
-            Y = session.PosY,
-            Z = session.PosZ,
+            X = session.PlayerData.Position.X,
+            Y = session.PlayerData.Position.Y,
+            Z = session.PlayerData.Position.Z,
         });
 
         Broadcast(move.Write());
