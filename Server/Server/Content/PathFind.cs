@@ -1,4 +1,6 @@
-﻿public class PathFind
+﻿namespace Server;
+
+public class PathFind
 {
     private HashSet<(int, int, int)> _tileHashSet = new HashSet<(int, int, int)>();
 

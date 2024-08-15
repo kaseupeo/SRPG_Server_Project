@@ -23,6 +23,12 @@ public class PacketManager
         _makeFunc.Add((ushort)PacketID.C_LeaveGame, MakePacket<C_LeaveGame>);
         _handler.Add((ushort)PacketID.C_LeaveGame, PacketHandler.C_LeaveGameHandler);
 
+        _makeFunc.Add((ushort)PacketID.C_ReadyGame, MakePacket<C_ReadyGame>);
+        _handler.Add((ushort)PacketID.C_ReadyGame, PacketHandler.C_ReadyGameHandler);
+
+        _makeFunc.Add((ushort)PacketID.C_EndTurn, MakePacket<C_EndTurn>);
+        _handler.Add((ushort)PacketID.C_EndTurn, PacketHandler.C_EndTurnHandler);
+
         _makeFunc.Add((ushort)PacketID.C_PlayerAction, MakePacket<C_PlayerAction>);
         _handler.Add((ushort)PacketID.C_PlayerAction, PacketHandler.C_PlayerActionHandler);
 

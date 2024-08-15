@@ -1,4 +1,4 @@
-﻿namespace Server.Content;
+﻿namespace Server;
 
 // TODO : 나중에 비트 플래그로 수정?
 public enum PlayerAction

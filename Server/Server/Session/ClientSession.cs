@@ -8,7 +8,8 @@ public class ClientSession : PacketSession
     public int SessionID { get; set; }
     public GameRoom Room { get; set; }
 
-    public PlayerData PlayerData { get; set; }
+    public EntityData EntityData { get; set; }
+    public bool IsReady { get; set; }
 
     public override void OnConnected(EndPoint endPoint)
     {

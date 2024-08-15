@@ -8,6 +8,8 @@ public class GameRoom : IJobQueue
     private JobQueue _jobQueue = new JobQueue();
     private List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
 
+    private TurnSystem _turnSystem = new TurnSystem();
+    
     public void Push(Action job)
     {
         _jobQueue.Push(job);
@@ -32,6 +34,8 @@ public class GameRoom : IJobQueue
         // 플레이어 추가
         _sessionList.Add(session);
         session.Room = this;
+        session.EntityData = new EntityData(session.SessionID);
+        _turnSystem.Add(session.EntityData);
         
         // TODO 
         // 새로 들어온 플레이어한테 모든 플레이어 목록 전송
@@ -42,9 +46,9 @@ public class GameRoom : IJobQueue
             {
                 isSelf = (clientSession == session),
                 playerID = clientSession.SessionID,
-                X = clientSession.PlayerData.Position.X,
-                Y = clientSession.PlayerData.Position.Y,
-                Z = clientSession.PlayerData.Position.Z,
+                X = clientSession.EntityData.Position.X,
+                Y = clientSession.EntityData.Position.Y,
+                Z = clientSession.EntityData.Position.Z,
             });
         }
 
@@ -56,6 +60,11 @@ public class GameRoom : IJobQueue
         enterGame.X = 0;
         enterGame.Y = 0;
         enterGame.Z = 0;
+        
+        // TEST : 테스트용 랜덤 속도 스탯 주기
+        Random random = new Random();
+        enterGame.Speed = random.Next(100);
+        session.EntityData.Speed = enterGame.Speed;
 
         Broadcast(enterGame.Write());
     }
@@ -72,6 +81,61 @@ public class GameRoom : IJobQueue
         Broadcast(leaveGame.Write());
     }
 
+    public void ReadyGame(ClientSession session, C_ReadyGame packet)
+    {
+        session.IsReady = packet.IsReady;
+        
+        // TODO : 준비 상태를 모두에게 알리는 패킷 만들면 추가
+
+
+        if (!_sessionList.All(x => x.IsReady)) 
+            return;
+        
+        S_StartGame startGame = new S_StartGame();
+        Broadcast(startGame.Write());
+
+        _turnSystem.Sort();
+        
+        Thread.Sleep(2000);
+        S_StartTurn startTurn = new S_StartTurn();
+        startTurn.playerID = _turnSystem.EntityQueue.Peek().Id;
+        Broadcast(startTurn.Write());
+    }
+
+    public void EndTurn(ClientSession session)
+    {
+        _turnSystem.EntityQueue.Dequeue();
+        
+        if (_turnSystem.EntityQueue.Count <= 0) 
+            _turnSystem.Sort();
+        
+        S_StartTurn startTurn = new S_StartTurn();
+        startTurn.playerID = _turnSystem.EntityQueue.Peek().Id;
+        Broadcast(startTurn.Write());
+    }
+    
+    public void ActionPlayer(ClientSession session, C_PlayerAction packet)
+    {
+        if (session.SessionID != _turnSystem.EntityQueue.Peek().Id)
+            return;
+        
+        switch ((PlayerAction)packet.action)
+        {
+            case PlayerAction.ShowMoveRange:
+                ShowMoveRange(session, packet);
+                break;
+            case PlayerAction.Move:
+                Move(session, packet);
+                break;
+            case PlayerAction.ShowAttackRange:
+                break;
+            case PlayerAction.Attack:
+                break;
+            default:
+                break;
+        }
+    }
+    
     public void ShowMoveRange(ClientSession session, C_PlayerAction packet)
     {
         // TODO : 나중에 맵 만들면 바꾸기
@@ -87,16 +151,6 @@ public class GameRoom : IJobQueue
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
             { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            // { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            // { 0, 1, 1, 0, 0, 0, 0, 0, 1, 0 },
-            // { 0, 0, 1, 0, 1, 1, 0, 0, 1, 0 },
-            // { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
-            // { 0, 1, 0, 0, 1, 1, 1, 0, 0, 0 },
-            // { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
-            // { 0, 1, 0, 1, 1, 1, 0, 0, 1, 0 },
-            // { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0 },
-            // { 0, 1, 0, 1, 0, 0, 1, 0, 1, 0 },
-            // { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         };
 
         // TODO : 맵 정보 구현 후 다시 정리
@@ -113,7 +167,7 @@ public class GameRoom : IJobQueue
         
         PathFind pathFind = new PathFind();
         HashSet<(int, int, int)> list = pathFind.FindTile(map, ((int)packet.X,(int)packet.Y, (int)packet.Z), 5);
-        session.PlayerData.ValidPosition = list;
+        session.EntityData.ValidPosition = list;
 
         
         S_MoveRange validPosition = new S_MoveRange();
@@ -137,10 +191,10 @@ public class GameRoom : IJobQueue
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
 
         // 이동 가능한 위치인지 체크
-        if (!session.PlayerData.ValidPosition.Contains(position))
+        if (!session.EntityData.ValidPosition.Contains(position))
             return;
         
-        session.PlayerData.Position = position;
+        session.EntityData.Position = position;
 
         // TODO : 이동 가능하면 A* 알고리즘을 통해 경로 보내기
         // TEST : 간단한 테스트를 위해 받은 위치로 순간이동 시킴
@@ -148,9 +202,9 @@ public class GameRoom : IJobQueue
         move.playerID = session.SessionID;
         move.pathList.Add(new S_Move.Path()
         {
-            X = session.PlayerData.Position.X,
-            Y = session.PlayerData.Position.Y,
-            Z = session.PlayerData.Position.Z,
+            X = session.EntityData.Position.X,
+            Y = session.EntityData.Position.Y,
+            Z = session.EntityData.Position.Z,
         });
 
         Broadcast(move.Write());

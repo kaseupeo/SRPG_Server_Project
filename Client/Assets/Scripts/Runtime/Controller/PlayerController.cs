@@ -10,7 +10,21 @@ public class PlayerController : BaseController
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        // 게임 준비 
+        if (!Managers.Game.IsStartGame)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                C_ReadyGame readyPacket = new C_ReadyGame();
+                readyPacket.IsReady = true;
+                Managers.Network.Send(readyPacket.Write());
+            }
+            
+            return;
+        }
+        
+        // 이동 범위
+        if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             C_PlayerAction actionPacket = new C_PlayerAction();
             actionPacket.action = 0;
@@ -20,6 +34,7 @@ public class PlayerController : BaseController
             Managers.Network.Send(actionPacket.Write());
         }
         
+        // 이동
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -37,6 +52,13 @@ public class PlayerController : BaseController
                 actionPacket.Z = pos2.z;
                 Managers.Network.Send(actionPacket.Write());
             }
+        }
+        
+        // 턴 종료
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            C_EndTurn endTurn = new C_EndTurn();
+            Managers.Network.Send(endTurn.Write());
         }
     }
 }

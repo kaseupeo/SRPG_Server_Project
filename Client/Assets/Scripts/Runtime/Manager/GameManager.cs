@@ -6,7 +6,9 @@ public class GameManager
 {
     private Entity _player;
     private Dictionary<int, Entity> _otherPlayerDic = new Dictionary<int, Entity>();
-    
+
+    public bool IsStartGame { get; set; } = false;
+
     public void Init()
     {
         
@@ -63,7 +65,21 @@ public class GameManager
             {
                 _otherPlayerDic.Add(p.playerID, entity);
             }
+
+            go.name = $"{p.playerID}";
         }
+    }
+
+    public void StartGame(S_StartGame packet)
+    {
+        IsStartGame = true;
+        // TODO : 게임 시작 알림같은거? 추가?
+
+    }
+
+    public void StartTurn(S_StartTurn packet)
+    {
+        // TODO : 턴 시작
     }
 
     public void ShowMoveRange(S_MoveRange packet)
@@ -72,6 +88,9 @@ public class GameManager
 
         foreach (Cube cube in cubeList) 
             cube.MoveTile.SetActive(false);
+        
+        if (packet.playerID != _player.ID)
+            return;
         
         var join = cubeList.Join(packet.positionList,
             cube => new Vector2Int((int)cube.transform.position.x, (int)cube.transform.position.z),

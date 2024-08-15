@@ -26,6 +26,22 @@ public class PacketHandler
         Managers.Game.Add(playerListPacket);
     }
 
+    public static void S_StartGameHandler(PacketSession session, IPacket packet)
+    {
+        S_StartGame startGamePacket = packet as S_StartGame;
+        ServerSession serverSession = session as ServerSession;
+        
+        Managers.Game.StartGame(startGamePacket);
+    }
+    
+    public static void S_StartTurnHandler(PacketSession session, IPacket packet)
+    {
+        S_StartTurn startTurnPacket = packet as S_StartTurn;
+        ServerSession serverSession = session as ServerSession;
+        
+        Managers.Game.StartTurn(startTurnPacket);
+    }
+    
     // 이동할 수 있는 위치 범위 리스트
     public static void S_MoveRangeHandler(PacketSession session, IPacket packet)
     {

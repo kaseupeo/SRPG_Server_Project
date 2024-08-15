@@ -1,5 +1,4 @@
 ﻿using Server;
-using Server.Content;
 using ServerCore;
 
 public class PacketHandler
@@ -15,26 +14,39 @@ public class PacketHandler
         room.Push(() => room.Leave(clientSession));
     }
 
-    public static void C_PlayerActionHandler(PacketSession session, IPacket packet)
+    public static void C_ReadyGameHandler(PacketSession session, IPacket packet)
     {
-        C_PlayerAction actionPacket = packet as C_PlayerAction;
         ClientSession clientSession = session as ClientSession;
+        C_ReadyGame readyPacket = packet as C_ReadyGame;
 
         if (clientSession.Room == null)
             return;
 
         GameRoom room = clientSession.Room;
+        room.Push(() => room.ReadyGame(clientSession, readyPacket));
+    }
+    
+    public static void C_EndTurnHandler(PacketSession session, IPacket packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_EndTurn endTurnPacket = packet as C_EndTurn;
 
-        switch ((PlayerAction)actionPacket.action)
-        {
-            case PlayerAction.ShowMoveRange:
-                room.Push(() => room.ShowMoveRange(clientSession, actionPacket));
-                break;
-            case PlayerAction.Move:
-                room.Push(() => room.Move(clientSession, actionPacket));
-                break;
-            default:
-                break;
-        }
+        if (clientSession.Room == null)
+            return;
+
+        GameRoom room = clientSession.Room;
+        room.Push(() => room.EndTurn(clientSession));
+    }
+    
+    public static void C_PlayerActionHandler(PacketSession session, IPacket packet)
+    {
+        ClientSession clientSession = session as ClientSession;
+        C_PlayerAction actionPacket = packet as C_PlayerAction;
+
+        if (clientSession.Room == null)
+            return;
+
+        GameRoom room = clientSession.Room;
+        room.Push(() => room.ActionPlayer(clientSession, actionPacket));
     }
 }
