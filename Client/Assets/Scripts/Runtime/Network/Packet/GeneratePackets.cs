@@ -7,19 +7,20 @@ using ServerCore;
 
 public enum PacketID
 {
-    S_BroadcastEnterGame = 1,
+    S_EnterGame = 1,
 	C_LeaveGame = 2,
-	S_BroadcastLeaveGame = 3,
+	S_LeaveGame = 3,
 	S_PlayerList = 4,
 	C_ReadyGame = 5,
-	S_StartGame = 6,
-	S_StartTurn = 7,
-	C_EndTurn = 8,
-	C_PlayerAction = 9,
-	S_MoveRange = 10,
-	S_Move = 11,
-	S_AttackRange = 12,
-	S_Attack = 13,
+	S_ReadyGame = 6,
+	S_StartGame = 7,
+	S_StartTurn = 8,
+	C_EndTurn = 9,
+	C_PlayerState = 10,
+	S_MoveRange = 11,
+	S_Move = 12,
+	S_AttackRange = 13,
+	S_Attack = 14,
 	
 }
 
@@ -31,14 +32,10 @@ public interface IPacket
 }
 
 
-public class S_BroadcastEnterGame : IPacket
+public class S_EnterGame : IPacket
 {
-    public int playerID;
-	public float X;
-	public float Y;
-	public float Z;
-	public int Speed;
-	public ushort Protocol => (ushort)PacketID.S_BroadcastEnterGame;
+    public int PlayerId;
+	public ushort Protocol => (ushort)PacketID.S_EnterGame;
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -48,19 +45,7 @@ public class S_BroadcastEnterGame : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
-		count += sizeof(int);
-		
-		this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-		count += sizeof(float);
-		
-		this.Y = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-		count += sizeof(float);
-		
-		this.Z = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-		count += sizeof(float);
-		
-		this.Speed = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
     }
     
@@ -72,22 +57,10 @@ public class S_BroadcastEnterGame : IPacket
         bool success = true;
 
         count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_BroadcastEnterGame);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_EnterGame);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
-		count += sizeof(int);
-		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
-		count += sizeof(float);
-		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Y);
-		count += sizeof(float);
-		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Z);
-		count += sizeof(float);
-		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Speed);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
         success &= BitConverter.TryWriteBytes(s, count);
 
@@ -131,10 +104,10 @@ public class C_LeaveGame : IPacket
         return SendBufferHelper.Close(count);
     }
 }
-public class S_BroadcastLeaveGame : IPacket
+public class S_LeaveGame : IPacket
 {
-    public int playerID;
-	public ushort Protocol => (ushort)PacketID.S_BroadcastLeaveGame;
+    public int PlayerId;
+	public ushort Protocol => (ushort)PacketID.S_LeaveGame;
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -144,7 +117,7 @@ public class S_BroadcastLeaveGame : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
     }
     
@@ -156,10 +129,10 @@ public class S_BroadcastLeaveGame : IPacket
         bool success = true;
 
         count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_BroadcastLeaveGame);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_LeaveGame);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
         success &= BitConverter.TryWriteBytes(s, count);
 
@@ -174,49 +147,28 @@ public class S_PlayerList : IPacket
     
 	public class Player
 	{
-	    public bool isSelf;
-		public int playerID;
-		public float X;
-		public float Y;
-		public float Z;
+	    public bool IsSelf;
+		public int PlayerId;
 	
 	    public void Read(ReadOnlySpan<byte> s, ref ushort count)
 	    {
 	        
-			this.isSelf = BitConverter.ToBoolean(s.Slice(count, s.Length - count));
+			this.IsSelf = BitConverter.ToBoolean(s.Slice(count, s.Length - count));
 			count += sizeof(bool);
 			
-			this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 			count += sizeof(int);
-			
-			this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-			count += sizeof(float);
-			
-			this.Y = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-			count += sizeof(float);
-			
-			this.Z = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-			count += sizeof(float);
 	    }
 	
 	    public bool Write(Span<byte> s, ref ushort count)
 	    {
 	        bool success = true;
 	        
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.isSelf);
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.IsSelf);
 			count += sizeof(bool);
 			
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 			count += sizeof(int);
-			
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
-			count += sizeof(float);
-			
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Y);
-			count += sizeof(float);
-			
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Z);
-			count += sizeof(float);
 	        return success;
 	    }
 	}
@@ -307,9 +259,132 @@ public class C_ReadyGame : IPacket
         return SendBufferHelper.Close(count);
     }
 }
+public class S_ReadyGame : IPacket
+{
+    
+	public class Player
+	{
+	    public int PlayerId;
+		public bool IsReady;
+	
+	    public void Read(ReadOnlySpan<byte> s, ref ushort count)
+	    {
+	        
+			this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+			
+			this.IsReady = BitConverter.ToBoolean(s.Slice(count, s.Length - count));
+			count += sizeof(bool);
+	    }
+	
+	    public bool Write(Span<byte> s, ref ushort count)
+	    {
+	        bool success = true;
+	        
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
+			count += sizeof(int);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.IsReady);
+			count += sizeof(bool);
+	        return success;
+	    }
+	}
+	
+	public List<Player> playerList = new List<Player>();
+	
+	public ushort Protocol => (ushort)PacketID.S_ReadyGame;
+
+    public void Read(ArraySegment<byte> segment)
+    {
+        ushort count = 0;
+        ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
+        
+        count += sizeof(ushort);
+        count += sizeof(ushort);
+        
+		this.playerList.Clear();
+		ushort playerLength = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+		count += sizeof(ushort);
+		
+		for (int i = 0; i < playerLength; i++)
+		{
+		    Player player = new Player();
+		    player.Read(s, ref count);
+		    playerList.Add(player);
+		}
+    }
+    
+    public ArraySegment<byte> Write()
+    {
+        ArraySegment<byte> segment = SendBufferHelper.Open(4096);
+        Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
+        ushort count = 0;
+        bool success = true;
+
+        count += sizeof(ushort);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_ReadyGame);
+        count += sizeof(ushort);
+       
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)playerList.Count);
+		count += sizeof(ushort);
+		
+		foreach (Player player in this.playerList) 
+		    success &= player.Write(s, ref count);
+        success &= BitConverter.TryWriteBytes(s, count);
+
+        if (success == false)
+            return null;
+        
+        return SendBufferHelper.Close(count);
+    }
+}
 public class S_StartGame : IPacket
 {
     
+	public class Entity
+	{
+	    public int PlayerId;
+		public float X;
+		public float Y;
+		public float Z;
+	
+	    public void Read(ReadOnlySpan<byte> s, ref ushort count)
+	    {
+	        
+			this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+			
+			this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
+			count += sizeof(float);
+			
+			this.Y = BitConverter.ToSingle(s.Slice(count, s.Length - count));
+			count += sizeof(float);
+			
+			this.Z = BitConverter.ToSingle(s.Slice(count, s.Length - count));
+			count += sizeof(float);
+	    }
+	
+	    public bool Write(Span<byte> s, ref ushort count)
+	    {
+	        bool success = true;
+	        
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
+			count += sizeof(int);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
+			count += sizeof(float);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Y);
+			count += sizeof(float);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Z);
+			count += sizeof(float);
+	        return success;
+	    }
+	}
+	
+	public List<Entity> entityList = new List<Entity>();
+	
 	public ushort Protocol => (ushort)PacketID.S_StartGame;
 
     public void Read(ArraySegment<byte> segment)
@@ -320,6 +395,16 @@ public class S_StartGame : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
+		this.entityList.Clear();
+		ushort entityLength = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+		count += sizeof(ushort);
+		
+		for (int i = 0; i < entityLength; i++)
+		{
+		    Entity entity = new Entity();
+		    entity.Read(s, ref count);
+		    entityList.Add(entity);
+		}
     }
     
     public ArraySegment<byte> Write()
@@ -333,6 +418,11 @@ public class S_StartGame : IPacket
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_StartGame);
         count += sizeof(ushort);
        
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)entityList.Count);
+		count += sizeof(ushort);
+		
+		foreach (Entity entity in this.entityList) 
+		    success &= entity.Write(s, ref count);
         success &= BitConverter.TryWriteBytes(s, count);
 
         if (success == false)
@@ -343,7 +433,7 @@ public class S_StartGame : IPacket
 }
 public class S_StartTurn : IPacket
 {
-    public int playerID;
+    public int PlayerId;
 	public ushort Protocol => (ushort)PacketID.S_StartTurn;
 
     public void Read(ArraySegment<byte> segment)
@@ -354,7 +444,7 @@ public class S_StartTurn : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
     }
     
@@ -369,7 +459,7 @@ public class S_StartTurn : IPacket
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_StartTurn);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
         success &= BitConverter.TryWriteBytes(s, count);
 
@@ -413,13 +503,13 @@ public class C_EndTurn : IPacket
         return SendBufferHelper.Close(count);
     }
 }
-public class C_PlayerAction : IPacket
+public class C_PlayerState : IPacket
 {
-    public int action;
+    public int State;
 	public float X;
 	public float Y;
 	public float Z;
-	public ushort Protocol => (ushort)PacketID.C_PlayerAction;
+	public ushort Protocol => (ushort)PacketID.C_PlayerState;
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -429,7 +519,7 @@ public class C_PlayerAction : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.action = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.State = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
 		this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
@@ -450,10 +540,10 @@ public class C_PlayerAction : IPacket
         bool success = true;
 
         count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.C_PlayerAction);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.C_PlayerState);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.action);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.State);
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
@@ -474,7 +564,7 @@ public class C_PlayerAction : IPacket
 }
 public class S_MoveRange : IPacket
 {
-    public int playerID;
+    public int PlayerId;
 	
 	public class Position
 	{
@@ -523,7 +613,7 @@ public class S_MoveRange : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
 		this.positionList.Clear();
@@ -549,7 +639,7 @@ public class S_MoveRange : IPacket
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_MoveRange);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)positionList.Count);
@@ -567,7 +657,7 @@ public class S_MoveRange : IPacket
 }
 public class S_Move : IPacket
 {
-    public int playerID;
+    public int PlayerId;
 	
 	public class Path
 	{
@@ -616,7 +706,7 @@ public class S_Move : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
 		this.pathList.Clear();
@@ -642,7 +732,7 @@ public class S_Move : IPacket
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_Move);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)pathList.Count);
@@ -660,7 +750,7 @@ public class S_Move : IPacket
 }
 public class S_AttackRange : IPacket
 {
-    public int playerID;
+    public int PlayerId;
 	
 	public class Position
 	{
@@ -709,7 +799,7 @@ public class S_AttackRange : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
 		this.positionList.Clear();
@@ -735,7 +825,7 @@ public class S_AttackRange : IPacket
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_AttackRange);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)positionList.Count);
@@ -753,7 +843,7 @@ public class S_AttackRange : IPacket
 }
 public class S_Attack : IPacket
 {
-    public int playerID;
+    public int PlayerId;
 	public float X;
 	public float Y;
 	public float Z;
@@ -767,7 +857,7 @@ public class S_Attack : IPacket
         count += sizeof(ushort);
         count += sizeof(ushort);
         
-		this.playerID = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
 		this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
@@ -791,7 +881,7 @@ public class S_Attack : IPacket
         success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_Attack);
         count += sizeof(ushort);
        
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);

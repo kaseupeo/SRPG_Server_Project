@@ -2,25 +2,52 @@
 
 public class TurnSystem
 {
-    private List<EntityData> _entityList = new List<EntityData>();
-    public Queue<EntityData> EntityQueue { get; set; } = new Queue<EntityData>();
+    private List<EntityData> _turnOrderBySpeed = new List<EntityData>();
+    private int _order = 0;
+    public IReadOnlyList<EntityData> TurnOrderBySpeed => _turnOrderBySpeed;
 
-    public void Add(EntityData entityData)
+    public EntityData CurrentTurn()
     {
-        _entityList.Add(entityData);
+        if (_turnOrderBySpeed.Count <= _order)
+            _order = 0;
+        
+        return _turnOrderBySpeed[_order];
     }
     
-    public void Sort()
+    public void NextTurn()
     {
-        _entityList.Sort((x, y) => y.Speed.CompareTo(x.Speed));
+        _order++;
+    }
+    
+    private void Sort()
+    {
+        var finishedList = _turnOrderBySpeed.Take(_order).ToList();
+        var newSortList = _turnOrderBySpeed.Skip(_order).ToList();
 
-        EntityQueue.Clear();
+        newSortList.Sort((x, y) => y.Speed.CompareTo(x.Speed));
         
+        _turnOrderBySpeed = finishedList.Concat(newSortList).ToList();        
         Console.WriteLine("순서");
-        foreach (EntityData entity in _entityList)
+        foreach (EntityData entity in _turnOrderBySpeed)
         {
-            EntityQueue.Enqueue(entity);
-            Console.WriteLine($"PlayerID : {entity.Id}, Speed : {entity.Speed}");
+            Console.WriteLine($"PlayerId : {entity.Id}, Speed : {entity.Speed}");
         }
+    }
+    
+    public void Add(EntityData entityData)
+    {
+        _turnOrderBySpeed.Add(entityData);
+        Sort();
+    }
+
+    public void Remove(EntityData entityData)
+    {
+        int index = _turnOrderBySpeed.IndexOf(entityData);
+        
+        if (index < _order) 
+            _order--;
+
+        _turnOrderBySpeed.RemoveAt(index);
+        Sort();
     }
 }

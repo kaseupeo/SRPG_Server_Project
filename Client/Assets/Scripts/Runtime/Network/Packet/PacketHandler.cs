@@ -2,17 +2,17 @@
 
 public class PacketHandler
 {
-    public static void S_BroadcastEnterGameHandler(PacketSession session, IPacket packet)
+    public static void S_EnterGameHandler(PacketSession session, IPacket packet)
     {
-        S_BroadcastEnterGame enterGamePacket = packet as S_BroadcastEnterGame;
+        S_EnterGame enterGamePacket = packet as S_EnterGame;
         ServerSession serverSession = session as ServerSession;
         
         Managers.Game.EnterGame(enterGamePacket);
     }
 
-    public static void S_BroadcastLeaveGameHandler(PacketSession session, IPacket packet)
+    public static void S_LeaveGameHandler(PacketSession session, IPacket packet)
     {
-        S_BroadcastLeaveGame leaveGamePacket = packet as S_BroadcastLeaveGame;
+        S_LeaveGame leaveGamePacket = packet as S_LeaveGame;
         ServerSession serverSession = session as ServerSession;
         
         Managers.Game.LeaveGame(leaveGamePacket);
@@ -23,9 +23,17 @@ public class PacketHandler
         S_PlayerList playerListPacket = packet as S_PlayerList;
         ServerSession serverSession = session as ServerSession;
         
-        Managers.Game.Add(playerListPacket);
+        Managers.Game.EnterGame(playerListPacket);
     }
 
+    public static void S_ReadyGameHandler(PacketSession session, IPacket packet)
+    {
+        S_ReadyGame readyGamePacket = packet as S_ReadyGame;
+        ServerSession serverSession = session as ServerSession;
+
+        Managers.Game.ReadyGame(readyGamePacket);
+    }
+    
     public static void S_StartGameHandler(PacketSession session, IPacket packet)
     {
         S_StartGame startGamePacket = packet as S_StartGame;

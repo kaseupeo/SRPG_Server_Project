@@ -16,7 +16,7 @@ public class SessionManager
             int sessionID = ++_sessionID;
 
             ClientSession session = new ClientSession();
-            session.SessionID = sessionID;
+            session.SessionId = sessionID;
 
             // session.EntityData = new EntityData($"Player_{sessionID}");
             
@@ -43,7 +43,7 @@ public class SessionManager
     {
         lock (_lock)
         {
-            _sessionDic.Remove(session.SessionID);
+            _sessionDic.Remove(session.SessionId);
         }
     }
 }

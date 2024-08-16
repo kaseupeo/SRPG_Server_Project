@@ -34,8 +34,7 @@ public class GameRoom : IJobQueue
         // 플레이어 추가
         _sessionList.Add(session);
         session.Room = this;
-        session.EntityData = new EntityData(session.SessionID);
-        _turnSystem.Add(session.EntityData);
+        session.EntityData = new EntityData(session.SessionId);
         
         // TODO 
         // 새로 들어온 플레이어한테 모든 플레이어 목록 전송
@@ -44,28 +43,17 @@ public class GameRoom : IJobQueue
         {
             playerList.playerList.Add(new S_PlayerList.Player
             {
-                isSelf = (clientSession == session),
-                playerID = clientSession.SessionID,
-                X = clientSession.EntityData.Position.X,
-                Y = clientSession.EntityData.Position.Y,
-                Z = clientSession.EntityData.Position.Z,
+                IsSelf = (clientSession == session),
+                PlayerId = clientSession.SessionId,
             });
         }
 
         session.Send(playerList.Write());
         
         // 새로 들어온 플레이어 입장을 모두에게 알림
-        S_BroadcastEnterGame enterGame = new S_BroadcastEnterGame();
-        enterGame.playerID = session.SessionID;
-        enterGame.X = 0;
-        enterGame.Y = 0;
-        enterGame.Z = 0;
+        S_EnterGame enterGame = new S_EnterGame();
+        enterGame.PlayerId = session.SessionId;
         
-        // TEST : 테스트용 랜덤 속도 스탯 주기
-        Random random = new Random();
-        enterGame.Speed = random.Next(100);
-        session.EntityData.Speed = enterGame.Speed;
-
         Broadcast(enterGame.Write());
     }
 
@@ -76,8 +64,8 @@ public class GameRoom : IJobQueue
         
         // TODO 
         // 모두에게 알림
-        S_BroadcastLeaveGame leaveGame = new S_BroadcastLeaveGame();
-        leaveGame.playerID = session.SessionID;
+        S_LeaveGame leaveGame = new S_LeaveGame();
+        leaveGame.PlayerId = session.SessionId;
         Broadcast(leaveGame.Write());
     }
 
@@ -86,40 +74,64 @@ public class GameRoom : IJobQueue
         session.IsReady = packet.IsReady;
         
         // TODO : 준비 상태를 모두에게 알리는 패킷 만들면 추가
-
+        S_ReadyGame readyGame = new S_ReadyGame();
+        foreach (ClientSession clientSession in _sessionList)
+        {
+            readyGame.playerList.Add(new S_ReadyGame.Player()
+            {
+                IsReady = clientSession.IsReady,
+                PlayerId = clientSession.SessionId,
+            });
+        }
+        Broadcast(readyGame.Write());
 
         if (!_sessionList.All(x => x.IsReady)) 
             return;
         
         S_StartGame startGame = new S_StartGame();
-        Broadcast(startGame.Write());
 
-        _turnSystem.Sort();
+        foreach (ClientSession clientSession in _sessionList)
+        {
+            // TEST : 테스트용 랜덤 속도 스탯 주기
+            Random random = new Random();
+            clientSession.EntityData.Speed = random.Next(100);
+            _turnSystem.Add(clientSession.EntityData);
+            
+            startGame.entityList.Add(new S_StartGame.Entity()
+            {
+                PlayerId = clientSession.EntityData.Id,
+                X = 0,
+                Y = 0,
+                Z = 0,
+            });
+        }
         
+        Broadcast(startGame.Write());
+        
+        // MEMO : 그냥 딜레이 줌 
         Thread.Sleep(2000);
+        
         S_StartTurn startTurn = new S_StartTurn();
-        startTurn.playerID = _turnSystem.EntityQueue.Peek().Id;
+        startTurn.PlayerId = _turnSystem.CurrentTurn().Id;
         Broadcast(startTurn.Write());
     }
 
     public void EndTurn(ClientSession session)
     {
-        _turnSystem.EntityQueue.Dequeue();
-        
-        if (_turnSystem.EntityQueue.Count <= 0) 
-            _turnSystem.Sort();
+        session.EntityData.ValidPosition = null;
         
         S_StartTurn startTurn = new S_StartTurn();
-        startTurn.playerID = _turnSystem.EntityQueue.Peek().Id;
+        _turnSystem.NextTurn();
+        startTurn.PlayerId = _turnSystem.CurrentTurn().Id;
         Broadcast(startTurn.Write());
     }
     
-    public void ActionPlayer(ClientSession session, C_PlayerAction packet)
+    public void State(ClientSession session, C_PlayerState packet)
     {
-        if (session.SessionID != _turnSystem.EntityQueue.Peek().Id)
+        if (session.SessionId != _turnSystem.CurrentTurn().Id)
             return;
         
-        switch ((PlayerAction)packet.action)
+        switch ((PlayerAction)packet.State)
         {
             case PlayerAction.ShowMoveRange:
                 ShowMoveRange(session, packet);
@@ -136,7 +148,7 @@ public class GameRoom : IJobQueue
         }
     }
     
-    public void ShowMoveRange(ClientSession session, C_PlayerAction packet)
+    public void ShowMoveRange(ClientSession session, C_PlayerState packet)
     {
         // TODO : 나중에 맵 만들면 바꾸기
         int[,] grid = new int[10, 10]
@@ -171,7 +183,7 @@ public class GameRoom : IJobQueue
 
         
         S_MoveRange validPosition = new S_MoveRange();
-        validPosition.playerID = session.SessionID;
+        validPosition.PlayerId = session.SessionId;
         
         foreach ((int x, int y, int z) tuple in list)
         {
@@ -186,7 +198,7 @@ public class GameRoom : IJobQueue
         Broadcast(validPosition.Write());
     }
     
-    public void Move(ClientSession session, C_PlayerAction packet)
+    public void Move(ClientSession session, C_PlayerState packet)
     {
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
 
@@ -199,7 +211,7 @@ public class GameRoom : IJobQueue
         // TODO : 이동 가능하면 A* 알고리즘을 통해 경로 보내기
         // TEST : 간단한 테스트를 위해 받은 위치로 순간이동 시킴
         S_Move move = new S_Move();
-        move.playerID = session.SessionID;
+        move.PlayerId = session.SessionId;
         move.pathList.Add(new S_Move.Path()
         {
             X = session.EntityData.Position.X,

@@ -38,15 +38,15 @@ public class PacketHandler
         room.Push(() => room.EndTurn(clientSession));
     }
     
-    public static void C_PlayerActionHandler(PacketSession session, IPacket packet)
+    public static void C_PlayerStateHandler(PacketSession session, IPacket packet)
     {
         ClientSession clientSession = session as ClientSession;
-        C_PlayerAction actionPacket = packet as C_PlayerAction;
+        C_PlayerState statePacket = packet as C_PlayerState;
 
         if (clientSession.Room == null)
             return;
 
         GameRoom room = clientSession.Room;
-        room.Push(() => room.ActionPlayer(clientSession, actionPacket));
+        room.Push(() => room.State(clientSession, statePacket));
     }
 }

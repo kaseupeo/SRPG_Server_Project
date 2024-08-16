@@ -5,7 +5,7 @@ namespace Server;
 
 public class ClientSession : PacketSession
 {
-    public int SessionID { get; set; }
+    public int SessionId { get; set; }
     public GameRoom Room { get; set; }
 
     public EntityData EntityData { get; set; }

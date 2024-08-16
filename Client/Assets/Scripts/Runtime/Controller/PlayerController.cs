@@ -26,12 +26,12 @@ public class PlayerController : BaseController
         // 이동 범위
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            C_PlayerAction actionPacket = new C_PlayerAction();
-            actionPacket.action = 0;
-            actionPacket.X = transform.position.x;
-            actionPacket.Y = 0;
-            actionPacket.Z = transform.position.z;
-            Managers.Network.Send(actionPacket.Write());
+            C_PlayerState statePacket = new C_PlayerState();
+            statePacket.State = 0;
+            statePacket.X = transform.position.x;
+            statePacket.Y = 0;
+            statePacket.Z = transform.position.z;
+            Managers.Network.Send(statePacket.Write());
         }
         
         // 이동
@@ -40,17 +40,14 @@ public class PlayerController : BaseController
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out var hit))
             {
-                string pos = hit.collider.gameObject.name;
-                Vector3 pos2 = hit.collider.gameObject.transform.position;
-
-                // Debug.Log($"name : {pos}, pos : {pos2}");
+                Vector3 position = hit.collider.gameObject.transform.position;
                 
                 // TODO : 이동할 수 있는 위치 중에서 선택 후 보내기
-                C_PlayerAction actionPacket = new C_PlayerAction();
-                actionPacket.action = 1;
-                actionPacket.X = pos2.x;
-                actionPacket.Z = pos2.z;
-                Managers.Network.Send(actionPacket.Write());
+                C_PlayerState statePacket = new C_PlayerState();
+                statePacket.State = 1;
+                statePacket.X = position.x;
+                statePacket.Z = position.z;
+                Managers.Network.Send(statePacket.Write());
             }
         }
         

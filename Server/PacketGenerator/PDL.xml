@@ -2,30 +2,25 @@
 <!-- C_ => 클라이언트에서 서버로 보내는 패킷 -->
 <!-- S_ => 서버에서 클라이언트로 보내는 패킷 -->
 <PDL>
-    <packet name="S_BroadcastEnterGame">
-        <int name="playerID"/>
-        <float name="X"/>
-        <float name="Y"/>
-        <float name="Z"/>
-        <!-- Test -->
-        <int name="Speed"/>
+    <!-- 게임 접속 -->
+    <packet name="S_EnterGame">
+        <int name="PlayerId"/>
     </packet>
+    <!-- 게임 나가기 -->
     <packet name="C_LeaveGame">
     </packet>
-    <packet name="S_BroadcastLeaveGame">
-        <int name="playerID"/>
+    <!-- 게임 나간것을 모두에게 알리기 -->
+    <packet name="S_LeaveGame">
+        <int name="PlayerId"/>
     </packet>
+    <!-- 접속한 플레이어 리스트 -->
     <packet name="S_PlayerList">
-        <list name="player">
-            <bool name="isSelf"/>
-            <int name="playerID"/>
-            <float name="X"/>
-            <float name="Y"/>
-            <float name="Z"/>
+        <list name="Player">
+            <bool name="IsSelf"/>
+            <int name="PlayerId"/>
         </list>
     </packet>
         
-    <!-- TODO : 턴 관리 패킷 -->
 <!--    
 턴 진행 방식
 게임 접속 -> 게임 준비 -> 게임 시작 -> 턴 시작 -> 턴 종료 
@@ -34,38 +29,48 @@
     <packet name="C_ReadyGame">
         <bool name="IsReady"/>
     </packet>
+    <!-- 게임 준비 상태 알리기 -->
+    <packet name="S_ReadyGame">
+        <list name="Player">
+            <int name="PlayerId"/>
+            <bool name="IsReady"/>
+        </list>
+    </packet>
     <!-- 게임 시작 -->
     <packet name="S_StartGame">
-        
+        <list name="Entity">
+            <int name="PlayerId"/>
+            <float name="X"/>
+            <float name="Y"/>
+            <float name="Z"/>
+        </list>
     </packet>
     <!-- 턴 시작 -->
     <packet name="S_StartTurn">
-        <int name="playerID"/>
+        <int name="PlayerId"/>
     </packet>
     <!-- 턴 종료 -->
     <packet name="C_EndTurn">
-        
     </packet>
+    
 <!--
 패킷 이동 순서 
 턴 시작 -> 플레이어 행동 및 좌표 
     -> 이동 행동일 때 -> 이동 범위 리스트 -> 플레이어 행동 및 좌표 -> 이동 경로 리스트
     -> 공격 행동일 때 -> 공격 범위 리스트 -> 플레이어 행동 및 좌표 -> 공격
-        
 -->
-    
     <!-- 플레이어 행동 및 좌표 -->
     <!-- 이동, 공격 등 -->
-    <packet name="C_PlayerAction">
-        <int name="action"/>
+    <packet name="C_PlayerState">
+        <int name="State"/>
         <float name="X"/>
         <float name="Y"/>
         <float name="Z"/>
     </packet>
     <!-- 이동 범위 리스트 -->
     <packet name="S_MoveRange">
-        <int name="playerID"/>
-        <list name="position">
+        <int name="PlayerId"/>
+        <list name="Position">
             <float name="X"/>
             <float name="Y"/>
             <float name="Z"/>
@@ -73,8 +78,8 @@
     </packet>
     <!-- 이동 경로 리스트 -->
     <packet name="S_Move">
-        <int name="playerID"/>
-        <list name="path">
+        <int name="PlayerId"/>
+        <list name="Path">
             <float name="X"/>
             <float name="Y"/>
             <float name="Z"/>
@@ -83,7 +88,7 @@
 
     <!-- 공격 범위 리스트 -->
     <packet name="S_AttackRange">
-        <int name="playerID"/>
+        <int name="PlayerId"/>
         <list name="position">
             <float name="X"/>
             <float name="Y"/>
@@ -92,7 +97,7 @@
     </packet>
     <!-- 공격 -->
     <packet name="S_Attack">
-        <int name="playerID"/>
+        <int name="PlayerId"/>
         <float name="X"/>
         <float name="Y"/>
         <float name="Z"/>

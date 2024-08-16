@@ -29,8 +29,8 @@ public class PacketManager
         _makeFunc.Add((ushort)PacketID.C_EndTurn, MakePacket<C_EndTurn>);
         _handler.Add((ushort)PacketID.C_EndTurn, PacketHandler.C_EndTurnHandler);
 
-        _makeFunc.Add((ushort)PacketID.C_PlayerAction, MakePacket<C_PlayerAction>);
-        _handler.Add((ushort)PacketID.C_PlayerAction, PacketHandler.C_PlayerActionHandler);
+        _makeFunc.Add((ushort)PacketID.C_PlayerState, MakePacket<C_PlayerState>);
+        _handler.Add((ushort)PacketID.C_PlayerState, PacketHandler.C_PlayerStateHandler);
 
     }
     
