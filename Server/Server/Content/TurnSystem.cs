@@ -2,11 +2,11 @@
 
 public class TurnSystem
 {
-    private List<EntityData> _turnOrderBySpeed = new List<EntityData>();
+    private List<Entity> _turnOrderBySpeed = new List<Entity>();
     private int _order = 0;
-    public IReadOnlyList<EntityData> TurnOrderBySpeed => _turnOrderBySpeed;
+    public IReadOnlyList<Entity> TurnOrderBySpeed => _turnOrderBySpeed;
 
-    public EntityData CurrentTurn()
+    public Entity CurrentTurn()
     {
         if (_turnOrderBySpeed.Count <= _order)
             _order = 0;
@@ -28,21 +28,21 @@ public class TurnSystem
         
         _turnOrderBySpeed = finishedList.Concat(newSortList).ToList();        
         Console.WriteLine("순서");
-        foreach (EntityData entity in _turnOrderBySpeed)
+        foreach (Entity entity in _turnOrderBySpeed)
         {
             Console.WriteLine($"PlayerId : {entity.Id}, Speed : {entity.Speed}");
         }
     }
     
-    public void Add(EntityData entityData)
+    public void Add(Entity entity)
     {
-        _turnOrderBySpeed.Add(entityData);
+        _turnOrderBySpeed.Add(entity);
         Sort();
     }
 
-    public void Remove(EntityData entityData)
+    public void Remove(Entity entity)
     {
-        int index = _turnOrderBySpeed.IndexOf(entityData);
+        int index = _turnOrderBySpeed.IndexOf(entity);
         
         if (index < _order) 
             _order--;

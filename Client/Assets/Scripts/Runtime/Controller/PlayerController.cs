@@ -50,6 +50,31 @@ public class PlayerController : BaseController
                 Managers.Network.Send(statePacket.Write());
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            C_PlayerState statePacket = new C_PlayerState();
+            statePacket.State = 2;
+            statePacket.X = transform.position.x;
+            statePacket.Y = 0;
+            statePacket.Z = transform.position.z;
+            Managers.Network.Send(statePacket.Write());
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out var hit))
+            {
+                Vector3 position = hit.collider.gameObject.transform.position;
+                
+                C_PlayerState statePacket = new C_PlayerState();
+                statePacket.State = 3;
+                statePacket.X = position.x;
+                statePacket.Z = position.z;
+                Managers.Network.Send(statePacket.Write());
+            }
+        }
         
         // 턴 종료
         if (Input.GetKeyDown(KeyCode.Space))

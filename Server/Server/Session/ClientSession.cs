@@ -6,9 +6,7 @@ namespace Server;
 public class ClientSession : PacketSession
 {
     public int SessionId { get; set; }
-    public GameRoom Room { get; set; }
-
-    public EntityData EntityData { get; set; }
+    public Entity Entity { get; set; }
     public bool IsReady { get; set; }
 
     public override void OnConnected(EndPoint endPoint)
@@ -26,11 +24,11 @@ public class ClientSession : PacketSession
     public override void OnDisconnected(EndPoint endPoint)
     {
         SessionManager.Instance.Remove(this);
-        if (Room != null)
+        if (Entity.Room != null)
         {
-            GameRoom room = Room;
+            GameRoom room = Entity.Room;
             room.Push(() => room.Leave(this));
-            Room = null;
+            Entity.Room = null;
         }
         
         Console.WriteLine($"OnDisconnected : {endPoint}");

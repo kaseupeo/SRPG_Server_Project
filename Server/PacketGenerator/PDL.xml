@@ -89,7 +89,7 @@
     <!-- 공격 범위 리스트 -->
     <packet name="S_AttackRange">
         <int name="PlayerId"/>
-        <list name="position">
+        <list name="Position">
             <float name="X"/>
             <float name="Y"/>
             <float name="Z"/>
@@ -98,8 +98,8 @@
     <!-- 공격 -->
     <packet name="S_Attack">
         <int name="PlayerId"/>
-        <float name="X"/>
-        <float name="Y"/>
-        <float name="Z"/>
+        <int name="TargetId"/>
+        <int name="Hp"/>
+        <int name="Damage"/>
     </packet>
 </PDL>

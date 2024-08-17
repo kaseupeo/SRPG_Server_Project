@@ -4,8 +4,7 @@ public class PathFind
 {
     private HashSet<(int, int, int)> _tileHashSet = new HashSet<(int, int, int)>();
 
-    public HashSet<(int, int, int)> FindTile(Dictionary<(int, int, int), bool> map, (int x, int y, int z) currentPos,
-        int moveRange)
+    public HashSet<(int, int, int)> FindTile(Dictionary<(int, int, int), bool> map, (int x, int y, int z) currentPos, int moveRange)
     {
         var directions = new (int x, int y, int z)[]
         {

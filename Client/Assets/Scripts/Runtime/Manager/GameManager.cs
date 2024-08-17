@@ -140,6 +140,40 @@ public class GameManager
         else if (_playerDic.TryGetValue(packet.PlayerId, out var playerController))
             playerController.transform.position = new Vector3(packet.pathList[0].X, packet.pathList[0].Y, packet.pathList[0].Z);
     }
+
+    public void ShowAttackRange(S_AttackRange packet)
+    {
+        List<Cube> cubeList = GameObject.Find("MapGenerate").GetComponent<GenerateTileMap>().CubeList;
+
+        foreach (Cube cube in cubeList) 
+            cube.AttackTile.SetActive(false);
+        
+        if (packet.PlayerId != _player.ID)
+            return;
+        
+        var join = cubeList.Join(packet.positionList,
+            cube => new Vector2Int((int)cube.transform.position.x, (int)cube.transform.position.z),
+            move => new Vector2Int((int)move.X, (int)move.Z),
+            (cube, move) => cube);
+
+        foreach (Cube cube in join) 
+            cube.AttackTile.SetActive(true);
+    }
+
+    public void Attack(S_Attack packet)
+    {
+        Debug.Log($"player ID : {packet.PlayerId} target ID : {packet.TargetId} target Hp : {packet.Hp}, Damage : {packet.Damage}");
+
+        // TEST : 오브젝트 삭제되는지 테스트 나중에 서버에서 사망처리하도록 수정 안하면 서버 터짐!!!
+        if (packet.Hp <= 0)
+        {
+            if (_playerDic.Remove(packet.TargetId, out var target))
+            {
+                Object.Destroy(target.gameObject);
+                Debug.Log("Target Die");
+            }
+        }
+    }
     
     public void Clear()
     {

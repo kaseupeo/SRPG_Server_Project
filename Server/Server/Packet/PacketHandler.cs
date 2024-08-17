@@ -7,10 +7,10 @@ public class PacketHandler
     {
         ClientSession clientSession = session as ClientSession;
 
-        if (clientSession.Room == null)
+        if (clientSession.Entity.Room == null)
             return;
 
-        GameRoom room = clientSession.Room;
+        GameRoom room = clientSession.Entity.Room;
         room.Push(() => room.Leave(clientSession));
     }
 
@@ -19,10 +19,10 @@ public class PacketHandler
         ClientSession clientSession = session as ClientSession;
         C_ReadyGame readyPacket = packet as C_ReadyGame;
 
-        if (clientSession.Room == null)
+        if (clientSession.Entity.Room == null)
             return;
 
-        GameRoom room = clientSession.Room;
+        GameRoom room = clientSession.Entity.Room;
         room.Push(() => room.ReadyGame(clientSession, readyPacket));
     }
     
@@ -31,11 +31,11 @@ public class PacketHandler
         ClientSession clientSession = session as ClientSession;
         C_EndTurn endTurnPacket = packet as C_EndTurn;
 
-        if (clientSession.Room == null)
+        if (clientSession.Entity.Room == null)
             return;
 
-        GameRoom room = clientSession.Room;
-        room.Push(() => room.EndTurn(clientSession));
+        GameRoom room = clientSession.Entity.Room;
+        room.Push(() => room.EndTurn());
     }
     
     public static void C_PlayerStateHandler(PacketSession session, IPacket packet)
@@ -43,10 +43,10 @@ public class PacketHandler
         ClientSession clientSession = session as ClientSession;
         C_PlayerState statePacket = packet as C_PlayerState;
 
-        if (clientSession.Room == null)
+        if (clientSession.Entity.Room == null)
             return;
 
-        GameRoom room = clientSession.Room;
+        GameRoom room = clientSession.Entity.Room;
         room.Push(() => room.State(clientSession, statePacket));
     }
 }

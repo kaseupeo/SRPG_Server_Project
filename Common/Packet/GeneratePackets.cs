@@ -844,9 +844,9 @@ public class S_AttackRange : IPacket
 public class S_Attack : IPacket
 {
     public int PlayerId;
-	public float X;
-	public float Y;
-	public float Z;
+	public int TargetId;
+	public int Hp;
+	public int Damage;
 	public ushort Protocol => (ushort)PacketID.S_Attack;
 
     public void Read(ArraySegment<byte> segment)
@@ -860,14 +860,14 @@ public class S_Attack : IPacket
 		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
-		this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-		count += sizeof(float);
+		this.TargetId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		count += sizeof(int);
 		
-		this.Y = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-		count += sizeof(float);
+		this.Hp = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		count += sizeof(int);
 		
-		this.Z = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-		count += sizeof(float);
+		this.Damage = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		count += sizeof(int);
     }
     
     public ArraySegment<byte> Write()
@@ -884,14 +884,14 @@ public class S_Attack : IPacket
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
 		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
-		count += sizeof(float);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.TargetId);
+		count += sizeof(int);
 		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Y);
-		count += sizeof(float);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Hp);
+		count += sizeof(int);
 		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Z);
-		count += sizeof(float);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Damage);
+		count += sizeof(int);
         success &= BitConverter.TryWriteBytes(s, count);
 
         if (success == false)

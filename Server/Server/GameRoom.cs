@@ -9,7 +9,7 @@ public class GameRoom : IJobQueue
     private List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
 
     private TurnSystem _turnSystem = new TurnSystem();
-    
+
     public void Push(Action job)
     {
         _jobQueue.Push(job);
@@ -33,8 +33,8 @@ public class GameRoom : IJobQueue
     {
         // 플레이어 추가
         _sessionList.Add(session);
-        session.Room = this;
-        session.EntityData = new EntityData(session.SessionId);
+        session.Entity = new Entity(session.SessionId);
+        session.Entity.Room = this;
         
         // TODO 
         // 새로 들어온 플레이어한테 모든 플레이어 목록 전송
@@ -89,17 +89,20 @@ public class GameRoom : IJobQueue
             return;
         
         S_StartGame startGame = new S_StartGame();
-
+        
+        // 맵 생성
+        MapManager.Instance.GenerateMap();
+        
         foreach (ClientSession clientSession in _sessionList)
         {
             // TEST : 테스트용 랜덤 속도 스탯 주기
             Random random = new Random();
-            clientSession.EntityData.Speed = random.Next(100);
-            _turnSystem.Add(clientSession.EntityData);
+            clientSession.Entity.Speed = random.Next(100);
+            _turnSystem.Add(clientSession.Entity);
             
             startGame.entityList.Add(new S_StartGame.Entity()
             {
-                PlayerId = clientSession.EntityData.Id,
+                PlayerId = clientSession.Entity.Id,
                 X = 0,
                 Y = 0,
                 Z = 0,
@@ -110,20 +113,22 @@ public class GameRoom : IJobQueue
         
         // MEMO : 그냥 딜레이 줌 
         Thread.Sleep(2000);
-        
-        S_StartTurn startTurn = new S_StartTurn();
-        startTurn.PlayerId = _turnSystem.CurrentTurn().Id;
-        Broadcast(startTurn.Write());
+
+        StartTurn();
     }
 
-    public void EndTurn(ClientSession session)
+    public void StartTurn()
     {
-        session.EntityData.ValidPosition = null;
-        
         S_StartTurn startTurn = new S_StartTurn();
-        _turnSystem.NextTurn();
         startTurn.PlayerId = _turnSystem.CurrentTurn().Id;
+        _turnSystem.CurrentTurn().Update();
         Broadcast(startTurn.Write());
+    }
+    
+    public void EndTurn()
+    {
+        _turnSystem.NextTurn();
+        StartTurn();
     }
     
     public void State(ClientSession session, C_PlayerState packet)
@@ -134,91 +139,19 @@ public class GameRoom : IJobQueue
         switch ((PlayerAction)packet.State)
         {
             case PlayerAction.ShowMoveRange:
-                ShowMoveRange(session, packet);
+                session.Entity.ShowMoveRange();
                 break;
             case PlayerAction.Move:
-                Move(session, packet);
+                session.Entity.Move(packet);
                 break;
             case PlayerAction.ShowAttackRange:
+                session.Entity.ShowAttackRange();
                 break;
             case PlayerAction.Attack:
+                session.Entity.Attack(packet);
                 break;
             default:
                 break;
         }
-    }
-    
-    public void ShowMoveRange(ClientSession session, C_PlayerState packet)
-    {
-        // TODO : 나중에 맵 만들면 바꾸기
-        int[,] grid = new int[10, 10]
-        {
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-        };
-
-        // TODO : 맵 정보 구현 후 다시 정리
-        Dictionary<(int, int, int), bool> map = new Dictionary<(int, int, int), bool>();
-
-        for (int x = 0; x < grid.GetLength(0); x++)
-        {
-            for (int z = 0; z < grid.GetLength(1); z++)
-            {
-                // 0이면 true (이동 가능), 1이면 false (장애물)
-                map[(x, 0, z)] = grid[x, z] == 0;
-            }
-        }
-        
-        PathFind pathFind = new PathFind();
-        HashSet<(int, int, int)> list = pathFind.FindTile(map, ((int)packet.X,(int)packet.Y, (int)packet.Z), 5);
-        session.EntityData.ValidPosition = list;
-
-        
-        S_MoveRange validPosition = new S_MoveRange();
-        validPosition.PlayerId = session.SessionId;
-        
-        foreach ((int x, int y, int z) tuple in list)
-        {
-            validPosition.positionList.Add(new S_MoveRange.Position()
-            {
-                X = tuple.x,
-                Y = tuple.y,
-                Z = tuple.z,
-            });
-        }
-
-        Broadcast(validPosition.Write());
-    }
-    
-    public void Move(ClientSession session, C_PlayerState packet)
-    {
-        (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
-
-        // 이동 가능한 위치인지 체크
-        if (!session.EntityData.ValidPosition.Contains(position))
-            return;
-        
-        session.EntityData.Position = position;
-
-        // TODO : 이동 가능하면 A* 알고리즘을 통해 경로 보내기
-        // TEST : 간단한 테스트를 위해 받은 위치로 순간이동 시킴
-        S_Move move = new S_Move();
-        move.PlayerId = session.SessionId;
-        move.pathList.Add(new S_Move.Path()
-        {
-            X = session.EntityData.Position.X,
-            Y = session.EntityData.Position.Y,
-            Z = session.EntityData.Position.Z,
-        });
-
-        Broadcast(move.Write());
     }
 }
