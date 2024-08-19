@@ -51,12 +51,12 @@ public class PacketHandler
     }
     
     // 이동할 수 있는 위치 범위 리스트
-    public static void S_MoveRangeHandler(PacketSession session, IPacket packet)
+    public static void S_ActionRangeHandler(PacketSession session, IPacket packet)
     {
-        S_MoveRange moveRangePacket = packet as S_MoveRange;
+        S_ActionRange moveRangePacket = packet as S_ActionRange;
         ServerSession serverSession = session as ServerSession;
         
-        Managers.Game.ShowMoveRange(moveRangePacket);
+        Managers.Game.ShowRange(moveRangePacket);
     }
 
     // 이동 경로 리스트
@@ -68,14 +68,14 @@ public class PacketHandler
         Managers.Game.Move(movePacket);
     }
 
-    public static void S_AttackRangeHandler(PacketSession session, IPacket packet)
-    {
-        S_AttackRange attackRangePacket = packet as S_AttackRange;
-        ServerSession serverSession = session as ServerSession;
-     
-        // TODO : 공격 범위 보여주는 함수 
-        Managers.Game.ShowAttackRange(attackRangePacket);
-    }
+    // public static void S_AttackRangeHandler(PacketSession session, IPacket packet)
+    // {
+    //     S_AttackRange attackRangePacket = packet as S_AttackRange;
+    //     ServerSession serverSession = session as ServerSession;
+    //  
+    //     // TODO : 공격 범위 보여주는 함수 
+    //     Managers.Game.ShowAttackRange(attackRangePacket);
+    // }
     
     public static void S_AttackHandler(PacketSession session, IPacket packet)
     {

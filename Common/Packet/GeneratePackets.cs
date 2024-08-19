@@ -17,10 +17,9 @@ public enum PacketID
 	S_StartTurn = 8,
 	C_EndTurn = 9,
 	C_PlayerState = 10,
-	S_MoveRange = 11,
+	S_ActionRange = 11,
 	S_Move = 12,
-	S_AttackRange = 13,
-	S_Attack = 14,
+	S_Attack = 13,
 	
 }
 
@@ -562,7 +561,7 @@ public class C_PlayerState : IPacket
         return SendBufferHelper.Close(count);
     }
 }
-public class S_MoveRange : IPacket
+public class S_ActionRange : IPacket
 {
     public int PlayerId;
 	
@@ -603,7 +602,7 @@ public class S_MoveRange : IPacket
 	
 	public List<Position> positionList = new List<Position>();
 	
-	public ushort Protocol => (ushort)PacketID.S_MoveRange;
+	public ushort Protocol => (ushort)PacketID.S_ActionRange;
 
     public void Read(ArraySegment<byte> segment)
     {
@@ -636,7 +635,7 @@ public class S_MoveRange : IPacket
         bool success = true;
 
         count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_MoveRange);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_ActionRange);
         count += sizeof(ushort);
        
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
@@ -740,99 +739,6 @@ public class S_Move : IPacket
 		
 		foreach (Path path in this.pathList) 
 		    success &= path.Write(s, ref count);
-        success &= BitConverter.TryWriteBytes(s, count);
-
-        if (success == false)
-            return null;
-        
-        return SendBufferHelper.Close(count);
-    }
-}
-public class S_AttackRange : IPacket
-{
-    public int PlayerId;
-	
-	public class Position
-	{
-	    public float X;
-		public float Y;
-		public float Z;
-	
-	    public void Read(ReadOnlySpan<byte> s, ref ushort count)
-	    {
-	        
-			this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-			count += sizeof(float);
-			
-			this.Y = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-			count += sizeof(float);
-			
-			this.Z = BitConverter.ToSingle(s.Slice(count, s.Length - count));
-			count += sizeof(float);
-	    }
-	
-	    public bool Write(Span<byte> s, ref ushort count)
-	    {
-	        bool success = true;
-	        
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
-			count += sizeof(float);
-			
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Y);
-			count += sizeof(float);
-			
-			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Z);
-			count += sizeof(float);
-	        return success;
-	    }
-	}
-	
-	public List<Position> positionList = new List<Position>();
-	
-	public ushort Protocol => (ushort)PacketID.S_AttackRange;
-
-    public void Read(ArraySegment<byte> segment)
-    {
-        ushort count = 0;
-        ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
-        
-        count += sizeof(ushort);
-        count += sizeof(ushort);
-        
-		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
-		count += sizeof(int);
-		
-		this.positionList.Clear();
-		ushort positionLength = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
-		count += sizeof(ushort);
-		
-		for (int i = 0; i < positionLength; i++)
-		{
-		    Position position = new Position();
-		    position.Read(s, ref count);
-		    positionList.Add(position);
-		}
-    }
-    
-    public ArraySegment<byte> Write()
-    {
-        ArraySegment<byte> segment = SendBufferHelper.Open(4096);
-        Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
-        ushort count = 0;
-        bool success = true;
-
-        count += sizeof(ushort);
-        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_AttackRange);
-        count += sizeof(ushort);
-       
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
-		count += sizeof(int);
-		
-		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)positionList.Count);
-		count += sizeof(ushort);
-		
-		foreach (Position position in this.positionList) 
-		    success &= position.Write(s, ref count);
         success &= BitConverter.TryWriteBytes(s, count);
 
         if (success == false)

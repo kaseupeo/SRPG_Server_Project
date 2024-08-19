@@ -7,6 +7,8 @@ public class Entity(int id)
     
     public GameRoom Room { get; set; }
 
+    public EntityState State { get; set; }
+
     // Entity Position
     private (int X, int Y, int Z) _position;
     public (int X, int Y, int Z) Position
@@ -15,7 +17,10 @@ public class Entity(int id)
         set
         {
             MapManager.Instance.EntitiesOnMapDic.Remove(_position);
-            MapManager.Instance.EntitiesOnMapDic.Add(value, this);
+            if (!MapManager.Instance.EntitiesOnMapDic.ContainsKey(value))
+            {
+                MapManager.Instance.EntitiesOnMapDic.Add(value, this);
+            }
             _position = value;
         }
     }
@@ -39,6 +44,28 @@ public class Entity(int id)
         MoveRangePosition = UpdateActionRange(MovePoint);
     }
 
+    public void ChangeState(C_PlayerState packet)
+    {
+        State = (EntityState)packet.State;
+        switch (State)
+        {
+            case EntityState.ShowRange | EntityState.Move:
+                ShowMoveRange();
+                break;
+            case EntityState.Move:
+                Move(packet);
+                break;
+            case EntityState.ShowRange | EntityState.Attack:
+                ShowAttackRange();
+                break;
+            case EntityState.Attack:
+                Attack(packet);
+                break;
+            default:
+                break;
+        }
+    }
+    
     private HashSet<(int, int, int)> UpdateActionRange(int range)
     {
         PathFind pathFind = new PathFind();
@@ -46,15 +73,15 @@ public class Entity(int id)
 
         return list;
     }
-    
-    public void ShowMoveRange()
+
+    private void ShowRange(HashSet<(int, int, int)> range)
     {
-        S_MoveRange moveRange = new S_MoveRange();
+        S_ActionRange moveRange = new S_ActionRange();
         moveRange.PlayerId = Id;
         
-        foreach ((int x, int y, int z) tuple in MoveRangePosition)
+        foreach ((int x, int y, int z) tuple in range)
         {
-            moveRange.positionList.Add(new S_MoveRange.Position()
+            moveRange.positionList.Add(new S_ActionRange.Position()
             {
                 X = tuple.x,
                 Y = tuple.y,
@@ -64,7 +91,19 @@ public class Entity(int id)
 
         Room.Broadcast(moveRange.Write());
     }
+    
+    public void ShowMoveRange()
+    {
+        ShowRange(MoveRangePosition);
+    }
 
+    public void ShowAttackRange()
+    {
+        AttackRangePosition = UpdateActionRange(AttackRange.Item1);
+
+        ShowRange(AttackRangePosition);
+    }
+    
     public void Move(C_PlayerState packet)
     {
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
@@ -88,31 +127,15 @@ public class Entity(int id)
         
         Room.Broadcast(move.Write());
     }
-
-    public void ShowAttackRange()
-    {
-        AttackRangePosition = UpdateActionRange(AttackRange.Item1);
-
-        S_AttackRange attackRange = new S_AttackRange();
-        attackRange.PlayerId = Id;
-        
-        foreach ((int x, int y, int z) tuple in AttackRangePosition)
-        {
-            attackRange.positionList.Add(new S_AttackRange.Position()
-            {
-                X = tuple.x,
-                Y = tuple.y,
-                Z = tuple.z,
-            });
-        }
-
-        Room.Broadcast(attackRange.Write());
-    }
     
     public void Attack(C_PlayerState packet)
     {
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
-
+        
+        // 공격범위에 있는지 체크
+        if (!AttackRangePosition.Contains(position))
+            return;
+        
         if (!MapManager.Instance.EntitiesOnMapDic.TryGetValue(position, out var target)) 
             return;
 
@@ -131,5 +154,7 @@ public class Entity(int id)
         // TODO : 사망 처리
 
         Room.Broadcast(attack.Write());
+
+        State = EntityState.Waiting;
     }
 }

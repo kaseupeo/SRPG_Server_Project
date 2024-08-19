@@ -35,7 +35,7 @@ public class PacketHandler
             return;
 
         GameRoom room = clientSession.Entity.Room;
-        room.Push(() => room.EndTurn());
+        room.Push(() => room.EndTurn(clientSession));
     }
     
     public static void C_PlayerStateHandler(PacketSession session, IPacket packet)

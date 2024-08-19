@@ -125,8 +125,11 @@ public class GameRoom : IJobQueue
         Broadcast(startTurn.Write());
     }
     
-    public void EndTurn()
+    public void EndTurn(ClientSession session)
     {
+        if (session.SessionId != _turnSystem.CurrentTurn().Id)
+            return;
+        
         _turnSystem.NextTurn();
         StartTurn();
     }
@@ -135,23 +138,7 @@ public class GameRoom : IJobQueue
     {
         if (session.SessionId != _turnSystem.CurrentTurn().Id)
             return;
-        
-        switch ((PlayerAction)packet.State)
-        {
-            case PlayerAction.ShowMoveRange:
-                session.Entity.ShowMoveRange();
-                break;
-            case PlayerAction.Move:
-                session.Entity.Move(packet);
-                break;
-            case PlayerAction.ShowAttackRange:
-                session.Entity.ShowAttackRange();
-                break;
-            case PlayerAction.Attack:
-                session.Entity.Attack(packet);
-                break;
-            default:
-                break;
-        }
+
+        session.Entity.ChangeState(packet);
     }
 }

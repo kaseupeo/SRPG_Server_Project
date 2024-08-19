@@ -3,15 +3,15 @@ using UnityEngine;
 
 public class BaseController : MonoBehaviour
 {
-    private Entity _entity;
+    public Entity Entity { get; set; }
 
     private void Start()
     {
         Init();
     }
 
-    protected virtual void Init()
+    public virtual void Init()
     {
-        _entity = GetComponent<Entity>();
+        Entity = GetComponent<Entity>();
     }
 }

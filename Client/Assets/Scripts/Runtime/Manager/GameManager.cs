@@ -6,9 +6,10 @@ using Object = UnityEngine.Object;
 
 public class GameManager
 {
-    private Entity _player;
+    private PlayerController _player;
     private Dictionary<int, Entity> _playerDic = new Dictionary<int, Entity>();
 
+    public PlayerController Player => _player;
     public bool IsStartGame { get; set; } = false;
 
     public void Init()
@@ -26,14 +27,14 @@ public class GameManager
             GameObject go = Object.Instantiate(obj) as GameObject;
             Entity entity = go.GetOrAddComponent<Entity>();
             
-            entity.ID = p.PlayerId;
+            entity.Id = p.PlayerId;
             go.name = $"{p.PlayerId}";
             _playerDic.Add(p.PlayerId, entity);
             
             if (p.IsSelf)
             {
-                go.AddComponent<PlayerController>();
-                _player = entity;
+                _player = go.AddComponent<PlayerController>();
+                _player.Init();
 
                 Debug.Log($"Enter Game : {p.PlayerId}");
             }
@@ -45,7 +46,7 @@ public class GameManager
     // 내가 접속 중 새로 들어온 플레이어 생성
     public void EnterGame(S_EnterGame packet)
     {
-        if (packet.PlayerId == _player.ID)
+        if (packet.PlayerId == _player.Entity.Id)
             return;
 
         Object obj = Resources.Load("Player");
@@ -53,7 +54,7 @@ public class GameManager
         Entity entity = go.GetOrAddComponent<Entity>();
 
         go.name = $"{packet.PlayerId}";
-        entity.ID = packet.PlayerId;
+        entity.Id = packet.PlayerId;
         _playerDic.Add(packet.PlayerId, entity);
 
         Debug.Log($"Enter Game : {packet.PlayerId}");
@@ -61,7 +62,7 @@ public class GameManager
 
     public void LeaveGame(S_LeaveGame packet)
     {
-        if (_player.ID == packet.PlayerId)
+        if (_player.Entity.Id == packet.PlayerId)
         {
             GameObject.Destroy(_player.gameObject);
             _player = null;
@@ -98,7 +99,7 @@ public class GameManager
 
                 player.Model = go;
                 player.transform.position = new Vector3(entity.X, entity.Y, entity.Z);
-                if (_player == player)
+                if (_player.Entity == player)
                     player.Model.GetComponent<MeshRenderer>().material.color = Color.blue;
             }
         }
@@ -111,16 +112,20 @@ public class GameManager
     public void StartTurn(S_StartTurn packet)
     {
         // TODO : 턴 시작
+        Debug.Log($"Start Turn : {packet.PlayerId}");
     }
 
-    public void ShowMoveRange(S_MoveRange packet)
+    public void ShowRange(S_ActionRange packet)
     {
         List<Cube> cubeList = GameObject.Find("MapGenerate").GetComponent<GenerateTileMap>().CubeList;
 
-        foreach (Cube cube in cubeList) 
+        foreach (Cube cube in cubeList)
+        {
             cube.MoveTile.SetActive(false);
+            cube.AttackTile.SetActive(false);
+        }
         
-        if (packet.PlayerId != _player.ID)
+        if (packet.PlayerId != _player.Entity.Id)
             return;
         
         var join = cubeList.Join(packet.positionList,
@@ -128,51 +133,42 @@ public class GameManager
             move => new Vector2Int((int)move.X, (int)move.Z),
             (cube, move) => cube);
 
-        foreach (Cube cube in join) 
-            cube.MoveTile.SetActive(true);
+        
+        foreach (Cube cube in join)
+        {
+            if (Define.EntityState.Move == (_player.Entity.State & Define.EntityState.Move))
+                cube.MoveTile.SetActive(true);
+            else if (Define.EntityState.Attack == (_player.Entity.State & Define.EntityState.Attack))
+                cube.AttackTile.SetActive(true);
+        }
+
+        Debug.Log($"상태 : {_player.Entity.State}");
+        _player.Entity.State &= ~Define.EntityState.ShowRange;
     }
     
     public void Move(S_Move packet)
     {
-        // TODO : 임시 
-        if (_player.ID == packet.PlayerId)
-            _player.transform.position = new Vector3(packet.pathList[0].X, packet.pathList[0].Y, packet.pathList[0].Z);
-        else if (_playerDic.TryGetValue(packet.PlayerId, out var playerController))
-            playerController.transform.position = new Vector3(packet.pathList[0].X, packet.pathList[0].Y, packet.pathList[0].Z);
+        if (_playerDic.TryGetValue(packet.PlayerId, out var entity))
+        {
+            List<Vector3> position = new List<Vector3>();
+
+            foreach (S_Move.Path path in packet.pathList) 
+                position.Add(new Vector3(path.X, path.Y, path.Z));
+            
+            entity.Move(position);
+        }
     }
-
-    public void ShowAttackRange(S_AttackRange packet)
-    {
-        List<Cube> cubeList = GameObject.Find("MapGenerate").GetComponent<GenerateTileMap>().CubeList;
-
-        foreach (Cube cube in cubeList) 
-            cube.AttackTile.SetActive(false);
-        
-        if (packet.PlayerId != _player.ID)
-            return;
-        
-        var join = cubeList.Join(packet.positionList,
-            cube => new Vector2Int((int)cube.transform.position.x, (int)cube.transform.position.z),
-            move => new Vector2Int((int)move.X, (int)move.Z),
-            (cube, move) => cube);
-
-        foreach (Cube cube in join) 
-            cube.AttackTile.SetActive(true);
-    }
-
+    
     public void Attack(S_Attack packet)
     {
-        Debug.Log($"player ID : {packet.PlayerId} target ID : {packet.TargetId} target Hp : {packet.Hp}, Damage : {packet.Damage}");
-
-        // TEST : 오브젝트 삭제되는지 테스트 나중에 서버에서 사망처리하도록 수정 안하면 서버 터짐!!!
-        if (packet.Hp <= 0)
+        if (_playerDic.TryGetValue(packet.PlayerId, out var entity) && _playerDic.TryGetValue(packet.TargetId, out var target))
         {
-            if (_playerDic.Remove(packet.TargetId, out var target))
-            {
-                Object.Destroy(target.gameObject);
-                Debug.Log("Target Die");
-            }
+            entity.Attack(packet.Damage);
+            target.TakeDamage(packet.Hp, packet.Damage);
+            entity.State = Define.EntityState.EndTurn;
         }
+        
+        Debug.Log($"player ID : {packet.PlayerId} target ID : {packet.TargetId} target Hp : {packet.Hp}, Damage : {packet.Damage}");
     }
     
     public void Clear()
