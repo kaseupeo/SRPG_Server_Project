@@ -2815,6 +2815,37 @@ Material:
     - _EmissionColorUI: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColorWithMapUI: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
+--- !u!1 &157238030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 157238031}
+  m_Layer: 0
+  m_Name: Map
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &157238031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 157238030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!21 &179523539
 Material:
   serializedVersion: 8
@@ -12400,7 +12431,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &664142328
 Transform:
   m_ObjectHideFlags: 0
@@ -12530,107 +12561,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cubePrefab: {fileID: 3452666223537092618, guid: 9438611941d5e944e883cc4f05e367ec, type: 3}
   mapScale: {x: 10, y: 10}
-  CubeList:
-  - {fileID: 1381334157}
-  - {fileID: 1340786570}
-  - {fileID: 369956142}
-  - {fileID: 1974798389}
-  - {fileID: 1107347058}
-  - {fileID: 1887908993}
-  - {fileID: 1651783898}
-  - {fileID: 1374878360}
-  - {fileID: 859506802}
-  - {fileID: 228418733}
-  - {fileID: 951372562}
-  - {fileID: 1700208507}
-  - {fileID: 66424031}
-  - {fileID: 1140158254}
-  - {fileID: 2048155109}
-  - {fileID: 1699086716}
-  - {fileID: 2002518224}
-  - {fileID: 1292688444}
-  - {fileID: 1782118252}
-  - {fileID: 1255698424}
-  - {fileID: 744638118}
-  - {fileID: 1848087641}
-  - {fileID: 2103793069}
-  - {fileID: 985362871}
-  - {fileID: 695463641}
-  - {fileID: 706416788}
-  - {fileID: 1081514178}
-  - {fileID: 1771651508}
-  - {fileID: 337158025}
-  - {fileID: 533152888}
-  - {fileID: 140525964}
-  - {fileID: 1605754367}
-  - {fileID: 1161116038}
-  - {fileID: 1513804937}
-  - {fileID: 361921234}
-  - {fileID: 1035413058}
-  - {fileID: 691419892}
-  - {fileID: 1657314483}
-  - {fileID: 384319923}
-  - {fileID: 1669198737}
-  - {fileID: 647236598}
-  - {fileID: 1593967799}
-  - {fileID: 1154350822}
-  - {fileID: 1263137924}
-  - {fileID: 187285820}
-  - {fileID: 593923192}
-  - {fileID: 454990223}
-  - {fileID: 626481166}
-  - {fileID: 408412288}
-  - {fileID: 2076700797}
-  - {fileID: 265631151}
-  - {fileID: 1324473999}
-  - {fileID: 614022710}
-  - {fileID: 1080650346}
-  - {fileID: 859762490}
-  - {fileID: 1999314678}
-  - {fileID: 1843231331}
-  - {fileID: 1088586784}
-  - {fileID: 1986060899}
-  - {fileID: 1769713846}
-  - {fileID: 23468537}
-  - {fileID: 317687411}
-  - {fileID: 1767844527}
-  - {fileID: 180966185}
-  - {fileID: 1859856048}
-  - {fileID: 1064321161}
-  - {fileID: 1368930939}
-  - {fileID: 471086022}
-  - {fileID: 2027752905}
-  - {fileID: 704919548}
-  - {fileID: 361960897}
-  - {fileID: 1021155378}
-  - {fileID: 862171149}
-  - {fileID: 1925866469}
-  - {fileID: 192052152}
-  - {fileID: 1039089483}
-  - {fileID: 1771847520}
-  - {fileID: 1839506138}
-  - {fileID: 830659428}
-  - {fileID: 1843022743}
-  - {fileID: 1430607351}
-  - {fileID: 1419362154}
-  - {fileID: 1347554153}
-  - {fileID: 1586832684}
-  - {fileID: 862808580}
-  - {fileID: 1706702032}
-  - {fileID: 61502961}
-  - {fileID: 538017974}
-  - {fileID: 1903337397}
-  - {fileID: 1269511508}
-  - {fileID: 12784876}
-  - {fileID: 1459162222}
-  - {fileID: 214331202}
-  - {fileID: 71259375}
-  - {fileID: 759087728}
-  - {fileID: 1613481722}
-  - {fileID: 614369228}
-  - {fileID: 616013773}
-  - {fileID: 321559582}
-  - {fileID: 320837572}
 --- !u!1 &664257209
 GameObject:
   m_ObjectHideFlags: 0
@@ -40192,3 +40122,4 @@ SceneRoots:
   - {fileID: 664142328}
   - {fileID: 1817292247}
   - {fileID: 904091897}
+  - {fileID: 157238031}

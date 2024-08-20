@@ -88,11 +88,25 @@ public class GameRoom : IJobQueue
         if (!_sessionList.All(x => x.IsReady)) 
             return;
         
-        S_StartGame startGame = new S_StartGame();
-        
         // 맵 생성
         MapManager.Instance.GenerateMap();
+        S_MapData mapData = new S_MapData();
+        mapData.Width = MapManager.Instance.Width;
+        mapData.Length = MapManager.Instance.Length;
+        foreach (KeyValuePair<(int X, int Y, int Z),bool> pair in MapManager.Instance.Map)
+        {
+            mapData.mapList.Add(new S_MapData.Map()
+            {
+                X = pair.Key.X,
+                Y = pair.Key.Y,
+                Z = pair.Key.Z,
+                Data = pair.Value
+            });
+        }
+
+        Broadcast(mapData.Write());
         
+        S_StartGame startGame = new S_StartGame();
         foreach (ClientSession clientSession in _sessionList)
         {
             // TEST : 테스트용 랜덤 속도 스탯 주기

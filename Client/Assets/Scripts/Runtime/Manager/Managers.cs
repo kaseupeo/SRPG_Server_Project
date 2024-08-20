@@ -34,13 +34,16 @@ public class Managers : MonoBehaviour
 
     private NetworkManager _network = new();
     private GameManager _game = new();
+    private MapManager _map = new();
 
     public static NetworkManager Network => Instance?._network;
     public static GameManager Game => Instance?._game;
+    public static MapManager Map => Instance?._map;
     
     private void Awake()
     {
         Network.Init();
+        Map.Init();
     }
 
     private void Update()

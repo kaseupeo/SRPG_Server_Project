@@ -20,7 +20,19 @@
             <int name="PlayerId"/>
         </list>
     </packet>
-        
+    
+    <!-- 맵 데이터 -->
+    <packet name="S_MapData">
+        <int name="Width"/>
+        <int name="Length"/>
+        <list name="Map">
+            <int name="X"/>
+            <int name="Y"/>
+            <int name="Z"/>
+            <bool name="Data"/>
+        </list>
+    </packet>
+    
 <!--    
 턴 진행 방식
 게임 접속 -> 게임 준비 -> 게임 시작 -> 턴 시작 -> 턴 종료 
@@ -95,6 +107,7 @@
         <int name="Damage"/>
     </packet>
     
+    <!-- 사망 -->
     <packet name="S_Dead">
         <int name="PlayerId"/>
         

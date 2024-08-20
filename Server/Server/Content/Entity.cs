@@ -4,9 +4,7 @@ public class Entity(int id)
 {
     // Entity ID
     public int Id { get; set; } = id;
-    
     public GameRoom Room { get; set; }
-
     public EntityState State { get; set; }
 
     // Entity Position
@@ -86,7 +84,7 @@ public class Entity(int id)
     private HashSet<(int, int, int)> UpdateActionRange(int range)
     {
         PathFind pathFind = new PathFind();
-        HashSet<(int, int, int)> list = pathFind.FindTile(MapManager.Instance.Map, (_position.X, _position.Y, _position.Z), range);
+        HashSet<(int, int, int)> list = pathFind.FindTile((_position.X, _position.Y, _position.Z), range);
 
         return list;
     }

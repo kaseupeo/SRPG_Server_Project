@@ -12,7 +12,7 @@ public class PathFind
         (0, 0, -1) // 아래쪽
     ];
     
-    public HashSet<(int, int, int)> FindTile(Dictionary<(int, int, int), bool> map, (int x, int y, int z) currentPos, int moveRange)
+    public HashSet<(int, int, int)> FindTile((int x, int y, int z) currentPos, int moveRange)
     {
         _tileHashSet.Add(currentPos);
 
@@ -22,8 +22,8 @@ public class PathFind
             {
                 var newPos = (currentPos.x + direction.x, currentPos.y + direction.y, currentPos.z + direction.z);
 
-                if (map.ContainsKey(newPos) && map[newPos])
-                    FindTile(map, newPos, moveRange - 1);
+                if (MapManager.Instance.Map.ContainsKey(newPos) && MapManager.Instance.Map[newPos])
+                    FindTile(newPos, moveRange - 1);
             }
         }
 

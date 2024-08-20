@@ -77,6 +77,14 @@ public class GameManager
         }
     }
 
+    public void GenerateMap(S_MapData packet)
+    {
+        foreach (S_MapData.Map map in packet.mapList)
+        {
+            Managers.Map.GenerateCube(new Vector3(map.X, map.Y, map.Z), map.Data);
+        }
+    }
+    
     public void ReadyGame(S_ReadyGame packet)
     {
         foreach (S_ReadyGame.Player player in packet.playerList)
@@ -122,9 +130,10 @@ public class GameManager
 
     public void ShowRange(S_ActionRange packet)
     {
-        List<Cube> cubeList = GameObject.Find("MapGenerate").GetComponent<GenerateTileMap>().CubeList;
+        // List<Cube> list = Managers.Map.CubeList.ToList();
+        IReadOnlyList<Cube> list = Managers.Map.CubeList;
 
-        foreach (Cube cube in cubeList)
+        foreach (Cube cube in list)
         {
             cube.MoveTile.SetActive(false);
             cube.AttackTile.SetActive(false);
@@ -133,7 +142,7 @@ public class GameManager
         if (packet.PlayerId != _player.Entity.Id)
             return;
         
-        var join = cubeList.Join(packet.positionList,
+        var join = list.Join(packet.positionList,
             cube => new Vector2Int((int)cube.transform.position.x, (int)cube.transform.position.z),
             move => new Vector2Int((int)move.X, (int)move.Z),
             (cube, move) => cube);

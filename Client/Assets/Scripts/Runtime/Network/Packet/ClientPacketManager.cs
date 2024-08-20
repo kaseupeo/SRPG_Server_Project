@@ -29,6 +29,9 @@ public class PacketManager
         _makeFunc.Add((ushort)PacketID.S_PlayerList, MakePacket<S_PlayerList>);
         _handler.Add((ushort)PacketID.S_PlayerList, PacketHandler.S_PlayerListHandler);
 
+        _makeFunc.Add((ushort)PacketID.S_MapData, MakePacket<S_MapData>);
+        _handler.Add((ushort)PacketID.S_MapData, PacketHandler.S_MapDataHandler);
+
         _makeFunc.Add((ushort)PacketID.S_ReadyGame, MakePacket<S_ReadyGame>);
         _handler.Add((ushort)PacketID.S_ReadyGame, PacketHandler.S_ReadyGameHandler);
 

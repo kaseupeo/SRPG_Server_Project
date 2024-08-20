@@ -26,6 +26,14 @@ public class PacketHandler
         Managers.Game.EnterGame(playerListPacket);
     }
 
+    public static void S_MapDataHandler(PacketSession session, IPacket packet)
+    {
+        S_MapData mapPacket = packet as S_MapData;
+        ServerSession serverSession = session as ServerSession;
+
+        Managers.Game.GenerateMap(mapPacket);
+    }
+    
     public static void S_ReadyGameHandler(PacketSession session, IPacket packet)
     {
         S_ReadyGame readyGamePacket = packet as S_ReadyGame;
