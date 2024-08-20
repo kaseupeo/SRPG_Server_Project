@@ -96,8 +96,7 @@ public class GameRoom : IJobQueue
         foreach (ClientSession clientSession in _sessionList)
         {
             // TEST : 테스트용 랜덤 속도 스탯 주기
-            Random random = new Random();
-            clientSession.Entity.Speed = random.Next(100);
+            clientSession.Entity.Init();
             _turnSystem.Add(clientSession.Entity);
             
             startGame.entityList.Add(new S_StartGame.Entity()

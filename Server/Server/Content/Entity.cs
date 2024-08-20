@@ -26,22 +26,39 @@ public class Entity(int id)
     }
 
     // Entity MoveRange Position
-    public HashSet<(int, int, int)> MoveRangePosition { get; set; } = new HashSet<(int, int, int)>();
-    public HashSet<(int, int, int)> AttackRangePosition { get; set; } = new HashSet<(int, int, int)>();
+    private HashSet<(int, int, int)> _moveRangePosition;
+    private HashSet<(int, int, int)> _attackRangePosition;
 
     // TODO : Entity Stat
-    public int Hp { get; set; } = 20;
-    public int Speed { get; set; }
-    public int MovePoint { get; set; } = 5;
-    public int Damage { get; set; } = 10;
-    public int Defense { get; set; } = 5;
-    public (int, int) AttackRange { get; set; } = (1, 2);
+    private int _maxHp;
+    private int _hp;
+    private int _speed;
+    private int _movePoint;
+    private int _damage;
+    private int _defense;
+    private (int, int) _attackRange;
 
+    public int Speed => _speed;
+    
+    public void Init()
+    {
+        _moveRangePosition = new HashSet<(int, int, int)>();
+        _attackRangePosition = new HashSet<(int, int, int)>();
+        Random random = new Random();
+        
+        _maxHp = 20;
+        _hp = _maxHp;
+        _speed = random.Next(100);
+        _movePoint = 5;
+        _damage = 10;
+        _defense = 5;
+        _attackRange = (1, 2);
+    }
     
     public void Update()
     {
-        AttackRangePosition = new HashSet<(int, int, int)>();
-        MoveRangePosition = UpdateActionRange(MovePoint);
+        _attackRangePosition = new HashSet<(int, int, int)>();
+        _moveRangePosition = UpdateActionRange(_movePoint);
     }
 
     public void ChangeState(C_PlayerState packet)
@@ -94,14 +111,14 @@ public class Entity(int id)
     
     public void ShowMoveRange()
     {
-        ShowRange(MoveRangePosition);
+        ShowRange(_moveRangePosition);
     }
 
     public void ShowAttackRange()
     {
-        AttackRangePosition = UpdateActionRange(AttackRange.Item1);
+        _attackRangePosition = UpdateActionRange(_attackRange.Item1);
 
-        ShowRange(AttackRangePosition);
+        ShowRange(_attackRangePosition);
     }
     
     public void Move(C_PlayerState packet)
@@ -109,7 +126,7 @@ public class Entity(int id)
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
 
         // 이동 가능한 위치인지 체크
-        if (!MoveRangePosition.Contains(position))
+        if (!_moveRangePosition.Contains(position))
             return;
         
         Position = position;
@@ -133,24 +150,25 @@ public class Entity(int id)
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
         
         // 공격범위에 있는지 체크
-        if (!AttackRangePosition.Contains(position))
+        if (!_attackRangePosition.Contains(position))
             return;
         
         if (!MapManager.Instance.EntitiesOnMapDic.TryGetValue(position, out var target)) 
             return;
 
-        int damage = Math.Max(Damage - target.Defense, 0);
-        target.Hp -= damage;
+        int damage = Math.Max(_damage - target._defense, 0);
+        target._hp -= damage;
         
         S_Attack attack = new S_Attack
         {
             PlayerId = Id,
             TargetId = target.Id,
             Damage = damage,
-            Hp = target.Hp
+            MaxHp = target._maxHp,
+            Hp = target._hp
         };
 
-        Console.WriteLine($"target Hp : {target.Hp}");
+        Console.WriteLine($"target Hp : {target._hp}");
         // TODO : 사망 처리
 
         Room.Broadcast(attack.Write());

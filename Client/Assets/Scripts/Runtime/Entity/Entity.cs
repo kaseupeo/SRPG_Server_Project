@@ -4,14 +4,16 @@ using UnityEngine;
 
 public class Entity : MonoBehaviour
 {
+    public delegate void ValueChangedHandler(float currentValue, float maxValue);
+
+    public ValueChangedHandler HpChanged;
+    
     public int Id { get; set; }
     public GameObject Model { get; set; }
     public Define.EntityState State { get; set; }
-    public Stats Stats { get; set; }
 
     private void Awake()
     {
-        Stats = gameObject.GetOrAddComponent<Stats>();
     }
 
     public void Move(List<Vector3> position)
@@ -27,8 +29,9 @@ public class Entity : MonoBehaviour
         State = Define.EntityState.EndTurn;
     }
     
-    public void TakeDamage(int hp, int damage)
+    public void TakeDamage(int maxHp, int hp, int damage)
     {
+        HpChanged.Invoke(hp, maxHp);
         Debug.Log($"{Id} - Take Damage, Hp : {hp}");
         // TODO : 
         if (hp <= 0) 

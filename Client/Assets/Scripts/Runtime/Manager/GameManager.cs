@@ -94,10 +94,15 @@ public class GameManager
             if (_playerDic.TryGetValue(entity.PlayerId, out var player))
             {
                 // TODO : 나중에 Entity 메소드로 빼기
-                Object obj = Resources.Load("Player Model");
-                GameObject go = GameObject.Instantiate(obj, player.transform, true) as GameObject;
+                Object model = Resources.Load("Player Model");
+                Object hpBar = Resources.Load("Hp");
+                GameObject modelGameObject = GameObject.Instantiate(model, player.transform, true) as GameObject;
+                GameObject hpBarCanvas = GameObject.Instantiate(hpBar, player.transform, true) as GameObject;
+                UIHpBar uiHpBar = hpBarCanvas.GetComponentInChildren<UIHpBar>();
 
-                player.Model = go;
+                player.Model = modelGameObject;
+
+                player.HpChanged += uiHpBar.Change;
                 player.transform.position = new Vector3(entity.X, entity.Y, entity.Z);
                 if (_player.Entity == player)
                     player.Model.GetComponent<MeshRenderer>().material.color = Color.blue;
@@ -164,7 +169,7 @@ public class GameManager
         if (_playerDic.TryGetValue(packet.PlayerId, out var entity) && _playerDic.TryGetValue(packet.TargetId, out var target))
         {
             entity.Attack(packet.Damage);
-            target.TakeDamage(packet.Hp, packet.Damage);
+            target.TakeDamage(packet.MaxHp, packet.Hp, packet.Damage);
             entity.State = Define.EntityState.EndTurn;
         }
         

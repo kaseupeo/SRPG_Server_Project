@@ -751,6 +751,7 @@ public class S_Attack : IPacket
 {
     public int PlayerId;
 	public int TargetId;
+	public int MaxHp;
 	public int Hp;
 	public int Damage;
 	public ushort Protocol => (ushort)PacketID.S_Attack;
@@ -767,6 +768,9 @@ public class S_Attack : IPacket
 		count += sizeof(int);
 		
 		this.TargetId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		count += sizeof(int);
+		
+		this.MaxHp = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 		count += sizeof(int);
 		
 		this.Hp = BitConverter.ToInt32(s.Slice(count, s.Length - count));
@@ -791,6 +795,9 @@ public class S_Attack : IPacket
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.TargetId);
+		count += sizeof(int);
+		
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.MaxHp);
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Hp);

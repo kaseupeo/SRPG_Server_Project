@@ -90,6 +90,7 @@
     <packet name="S_Attack">
         <int name="PlayerId"/>
         <int name="TargetId"/>
+        <int name="MaxHp"/>
         <int name="Hp"/>
         <int name="Damage"/>
     </packet>
