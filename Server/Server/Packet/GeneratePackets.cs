@@ -20,6 +20,7 @@ public enum PacketID
 	S_ActionRange = 11,
 	S_Move = 12,
 	S_Attack = 13,
+	S_Dead = 14,
 	
 }
 
@@ -804,6 +805,44 @@ public class S_Attack : IPacket
 		count += sizeof(int);
 		
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Damage);
+		count += sizeof(int);
+        success &= BitConverter.TryWriteBytes(s, count);
+
+        if (success == false)
+            return null;
+        
+        return SendBufferHelper.Close(count);
+    }
+}
+public class S_Dead : IPacket
+{
+    public int PlayerId;
+	public ushort Protocol => (ushort)PacketID.S_Dead;
+
+    public void Read(ArraySegment<byte> segment)
+    {
+        ushort count = 0;
+        ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
+        
+        count += sizeof(ushort);
+        count += sizeof(ushort);
+        
+		this.PlayerId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+		count += sizeof(int);
+    }
+    
+    public ArraySegment<byte> Write()
+    {
+        ArraySegment<byte> segment = SendBufferHelper.Open(4096);
+        Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
+        ushort count = 0;
+        bool success = true;
+
+        count += sizeof(ushort);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_Dead);
+        count += sizeof(ushort);
+       
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.PlayerId);
 		count += sizeof(int);
         success &= BitConverter.TryWriteBytes(s, count);
 

@@ -33,13 +33,12 @@ public class Entity : MonoBehaviour
     {
         HpChanged.Invoke(hp, maxHp);
         Debug.Log($"{Id} - Take Damage, Hp : {hp}");
-        // TODO : 
-        if (hp <= 0) 
-            Dead();
     }
 
     public void Dead()
     {
-        // TODO :
+        HpChanged = null;
+        Debug.Log($"Id : {Id}");
+        Destroy(gameObject);
     }
 }

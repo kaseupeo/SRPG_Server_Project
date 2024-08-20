@@ -8,7 +8,7 @@ public class GameRoom : IJobQueue
     private JobQueue _jobQueue = new JobQueue();
     private List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
 
-    private TurnSystem _turnSystem = new TurnSystem();
+    public TurnSystem TurnSystem = new TurnSystem();
 
     public void Push(Action job)
     {
@@ -97,7 +97,7 @@ public class GameRoom : IJobQueue
         {
             // TEST : 테스트용 랜덤 속도 스탯 주기
             clientSession.Entity.Init();
-            _turnSystem.Add(clientSession.Entity);
+            TurnSystem.Add(clientSession.Entity);
             
             startGame.entityList.Add(new S_StartGame.Entity()
             {
@@ -119,23 +119,23 @@ public class GameRoom : IJobQueue
     public void StartTurn()
     {
         S_StartTurn startTurn = new S_StartTurn();
-        startTurn.PlayerId = _turnSystem.CurrentTurn().Id;
-        _turnSystem.CurrentTurn().Update();
+        startTurn.PlayerId = TurnSystem.CurrentTurn().Id;
+        TurnSystem.CurrentTurn().Update();
         Broadcast(startTurn.Write());
     }
     
     public void EndTurn(ClientSession session)
     {
-        if (session.SessionId != _turnSystem.CurrentTurn().Id)
+        if (session.SessionId != TurnSystem.CurrentTurn().Id)
             return;
         
-        _turnSystem.NextTurn();
+        TurnSystem.NextTurn();
         StartTurn();
     }
     
     public void State(ClientSession session, C_PlayerState packet)
     {
-        if (session.SessionId != _turnSystem.CurrentTurn().Id)
+        if (session.SessionId != TurnSystem.CurrentTurn().Id)
             return;
 
         session.Entity.ChangeState(packet);

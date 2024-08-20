@@ -47,6 +47,9 @@ public class PacketManager
         _makeFunc.Add((ushort)PacketID.S_Attack, MakePacket<S_Attack>);
         _handler.Add((ushort)PacketID.S_Attack, PacketHandler.S_AttackHandler);
 
+        _makeFunc.Add((ushort)PacketID.S_Dead, MakePacket<S_Dead>);
+        _handler.Add((ushort)PacketID.S_Dead, PacketHandler.S_DeadHandler);
+
     }
     
     public void OnReceivePacket(PacketSession session, ArraySegment<byte> buffer, Action<PacketSession, IPacket> onReceiveCallback = null)

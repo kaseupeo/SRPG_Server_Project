@@ -67,22 +67,20 @@ public class PacketHandler
         
         Managers.Game.Move(movePacket);
     }
-
-    // public static void S_AttackRangeHandler(PacketSession session, IPacket packet)
-    // {
-    //     S_AttackRange attackRangePacket = packet as S_AttackRange;
-    //     ServerSession serverSession = session as ServerSession;
-    //  
-    //     // TODO : 공격 범위 보여주는 함수 
-    //     Managers.Game.ShowAttackRange(attackRangePacket);
-    // }
     
     public static void S_AttackHandler(PacketSession session, IPacket packet)
     {
         S_Attack attackPacket = packet as S_Attack;
         ServerSession serverSession = session as ServerSession;
      
-        // TODO : 공격 함수 
         Managers.Game.Attack(attackPacket);
+    }
+
+    public static void S_DeadHandler(PacketSession session, IPacket packet)
+    {
+        S_Dead deadPacket = packet as S_Dead;
+        ServerSession serverSession = session as ServerSession;
+
+        Managers.Game.Dead(deadPacket);
     }
 }

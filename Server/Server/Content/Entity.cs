@@ -170,9 +170,21 @@ public class Entity(int id)
 
         Console.WriteLine($"target Hp : {target._hp}");
         // TODO : 사망 처리
+        if (target._hp <= 0)
+            target.Dead();
 
         Room.Broadcast(attack.Write());
 
         State = EntityState.Waiting;
+    }
+
+    public void Dead()
+    {
+        Room.TurnSystem.Remove(this);
+
+        S_Dead dead = new S_Dead();
+        dead.PlayerId = Id;
+
+        Room.Broadcast(dead.Write());
     }
 }

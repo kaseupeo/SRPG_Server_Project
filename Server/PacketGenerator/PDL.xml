@@ -94,4 +94,9 @@
         <int name="Hp"/>
         <int name="Damage"/>
     </packet>
+    
+    <packet name="S_Dead">
+        <int name="PlayerId"/>
+        
+    </packet>
 </PDL>

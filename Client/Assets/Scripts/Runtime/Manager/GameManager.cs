@@ -175,6 +175,12 @@ public class GameManager
         
         Debug.Log($"player ID : {packet.PlayerId} target ID : {packet.TargetId} target Hp : {packet.Hp}, Damage : {packet.Damage}");
     }
+
+    public void Dead(S_Dead packet)
+    {
+        _playerDic.Remove(packet.PlayerId, out var entity);
+        entity.Dead();
+    }
     
     public void Clear()
     {
