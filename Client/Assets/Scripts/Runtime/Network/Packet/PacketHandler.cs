@@ -33,6 +33,14 @@ public class PacketHandler
 
         Managers.Game.GenerateMap(mapPacket);
     }
+
+    public static void S_EnemyDataHandler(PacketSession session, IPacket packet)
+    {
+        S_EnemyData enemyPacket = packet as S_EnemyData;
+        ServerSession serverSession = session as ServerSession;
+
+        Managers.Game.GenerateEnemy(enemyPacket);
+    }
     
     public static void S_ReadyGameHandler(PacketSession session, IPacket packet)
     {

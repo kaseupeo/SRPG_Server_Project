@@ -5,7 +5,7 @@ public class BaseController : MonoBehaviour
 {
     public Entity Entity { get; set; }
 
-    private void Start()
+    private void Awake()
     {
         Init();
     }

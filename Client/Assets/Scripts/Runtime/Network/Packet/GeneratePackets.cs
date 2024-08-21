@@ -12,16 +12,17 @@ public enum PacketID
 	S_LeaveGame = 3,
 	S_PlayerList = 4,
 	S_MapData = 5,
-	C_ReadyGame = 6,
-	S_ReadyGame = 7,
-	S_StartGame = 8,
-	S_StartTurn = 9,
-	C_EndTurn = 10,
-	C_PlayerState = 11,
-	S_ActionRange = 12,
-	S_Move = 13,
-	S_Attack = 14,
-	S_Dead = 15,
+	S_EnemyData = 6,
+	C_ReadyGame = 7,
+	S_ReadyGame = 8,
+	S_StartGame = 9,
+	S_StartTurn = 10,
+	C_EndTurn = 11,
+	C_PlayerState = 12,
+	S_ActionRange = 13,
+	S_Move = 14,
+	S_Attack = 15,
+	S_Dead = 16,
 	
 }
 
@@ -321,6 +322,99 @@ public class S_MapData : IPacket
 		
 		foreach (Map map in this.mapList) 
 		    success &= map.Write(s, ref count);
+        success &= BitConverter.TryWriteBytes(s, count);
+
+        if (success == false)
+            return null;
+        
+        return SendBufferHelper.Close(count);
+    }
+}
+public class S_EnemyData : IPacket
+{
+    
+	public class Enemy
+	{
+	    public int EnemyId;
+		public int X;
+		public int Y;
+		public int Z;
+	
+	    public void Read(ReadOnlySpan<byte> s, ref ushort count)
+	    {
+	        
+			this.EnemyId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+			
+			this.X = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+			
+			this.Y = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+			
+			this.Z = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+	    }
+	
+	    public bool Write(Span<byte> s, ref ushort count)
+	    {
+	        bool success = true;
+	        
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.EnemyId);
+			count += sizeof(int);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);
+			count += sizeof(int);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Y);
+			count += sizeof(int);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Z);
+			count += sizeof(int);
+	        return success;
+	    }
+	}
+	
+	public List<Enemy> enemyList = new List<Enemy>();
+	
+	public ushort Protocol => (ushort)PacketID.S_EnemyData;
+
+    public void Read(ArraySegment<byte> segment)
+    {
+        ushort count = 0;
+        ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
+        
+        count += sizeof(ushort);
+        count += sizeof(ushort);
+        
+		this.enemyList.Clear();
+		ushort enemyLength = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+		count += sizeof(ushort);
+		
+		for (int i = 0; i < enemyLength; i++)
+		{
+		    Enemy enemy = new Enemy();
+		    enemy.Read(s, ref count);
+		    enemyList.Add(enemy);
+		}
+    }
+    
+    public ArraySegment<byte> Write()
+    {
+        ArraySegment<byte> segment = SendBufferHelper.Open(4096);
+        Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
+        ushort count = 0;
+        bool success = true;
+
+        count += sizeof(ushort);
+        success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_EnemyData);
+        count += sizeof(ushort);
+       
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)enemyList.Count);
+		count += sizeof(ushort);
+		
+		foreach (Enemy enemy in this.enemyList) 
+		    success &= enemy.Write(s, ref count);
         success &= BitConverter.TryWriteBytes(s, count);
 
         if (success == false)

@@ -33,6 +33,16 @@
         </list>
     </packet>
     
+    <!-- 적 데이터 -->
+    <packet name="S_EnemyData">
+        <list name="Enemy">
+            <int name="EnemyId"/>
+            <int name="X"/>
+            <int name="Y"/>
+            <int name="Z"/>
+        </list>
+    </packet>
+    
 <!--    
 턴 진행 방식
 게임 접속 -> 게임 준비 -> 게임 시작 -> 턴 시작 -> 턴 종료 

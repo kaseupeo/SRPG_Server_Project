@@ -127,12 +127,11 @@ public class Entity(int id)
         if (!_moveRangePosition.Contains(position))
             return;
         
-        var aStar = new AStar(MapManager.Instance.Map);
+        // MEMO : ASTAR
+        AStar aStar = new AStar(MapManager.Instance.Map);
         List<(int x, int y, int z)> path = aStar.FindPath(_position, position);
         Position = position;
 
-        // TODO : 이동 가능하면 A* 알고리즘을 통해 경로 보내기
-        // TEST : 간단한 테스트를 위해 받은 위치로 순간이동 시킴
         S_Move move = new S_Move();
         move.PlayerId = Id;
 
@@ -148,27 +147,23 @@ public class Entity(int id)
             Console.WriteLine($"({tuple.x}, {tuple.y}, {tuple.z}), ");
         }
         
-        // move.pathList.Add(new S_Move.Path()
-        // {
-        //     X = _position.X,
-        //     Y = _position.Y,
-        //     Z = _position.Z,
-        // });
-        
         Room.Broadcast(move.Write());
     }
     
     public void Attack(C_PlayerState packet)
     {
+        Console.WriteLine("Attack In");
         (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
         
         // 공격범위에 있는지 체크
         if (!_attackRangePosition.Contains(position))
             return;
-        
+
+        Console.WriteLine("Attack Range In");
         if (!MapManager.Instance.EntitiesOnMapDic.TryGetValue(position, out var target)) 
             return;
 
+        Console.WriteLine("Attack start");
         int damage = Math.Max(_damage - target._defense, 0);
         target._hp -= damage;
         

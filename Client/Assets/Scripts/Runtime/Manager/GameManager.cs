@@ -8,6 +8,7 @@ public class GameManager
 {
     private PlayerController _player;
     private Dictionary<int, Entity> _playerDic = new Dictionary<int, Entity>();
+    private Dictionary<int, Entity> _enemyDic = new Dictionary<int, Entity>();
 
     public PlayerController Player => _player;
     public bool IsStartGame { get; set; } = false;
@@ -34,7 +35,7 @@ public class GameManager
             if (p.IsSelf)
             {
                 _player = go.AddComponent<PlayerController>();
-                _player.Init();
+                // _player.Init();
 
                 Debug.Log($"Enter Game : {p.PlayerId}");
             }
@@ -49,7 +50,7 @@ public class GameManager
         if (packet.PlayerId == _player.Entity.Id)
             return;
 
-        Object obj = Resources.Load("Player");
+        Object obj = Resources.Load("Entity");
         GameObject go = Object.Instantiate(obj) as GameObject;
         Entity entity = go.GetOrAddComponent<Entity>();
 
@@ -84,6 +85,33 @@ public class GameManager
             Managers.Map.GenerateCube(new Vector3(map.X, map.Y, map.Z), map.Data);
         }
     }
+
+    public void GenerateEnemy(S_EnemyData packet)
+    {
+        // TEST
+        // foreach (S_EnemyData.Enemy enemy in packet.enemyList)
+        // {
+        //     Object obj = Resources.Load("Enemy");
+        //     GameObject go = Object.Instantiate(obj) as GameObject;
+        //     Entity entity = go.GetOrAddComponent<Entity>();
+        //
+        //     go.name = $"{enemy.EnemyId}";
+        //     entity.Id = enemy.EnemyId;
+        //     _enemyDic.Add(enemy.EnemyId, entity);
+        //     
+        //     // TODO : 나중에 Entity 메소드로 빼기
+        //     Object model = Resources.Load("Enemy Model");
+        //     Object hpBar = Resources.Load("Hp");
+        //     GameObject modelGameObject = GameObject.Instantiate(model, entity.transform, true) as GameObject;
+        //     GameObject hpBarCanvas = GameObject.Instantiate(hpBar, entity.transform, true) as GameObject;
+        //     UIHpBar uiHpBar = hpBarCanvas.GetComponentInChildren<UIHpBar>();
+        //
+        //     entity.Model = modelGameObject;
+        //
+        //     entity.HpChanged += uiHpBar.Change;
+        //     entity.transform.position = new Vector3(enemy.X, enemy.Y, enemy.Z);
+        // }
+    }
     
     public void ReadyGame(S_ReadyGame packet)
     {
@@ -96,11 +124,13 @@ public class GameManager
 
     public void StartGame(S_StartGame packet)
     {
+        Debug.Log("Start Game");
         // TODO : 게임 시작
         foreach (S_StartGame.Entity entity in packet.entityList)
         {
             if (_playerDic.TryGetValue(entity.PlayerId, out var player))
             {
+                // TEST
                 // TODO : 나중에 Entity 메소드로 빼기
                 Object model = Resources.Load("Player Model");
                 Object hpBar = Resources.Load("Hp");
@@ -114,6 +144,28 @@ public class GameManager
                 player.transform.position = new Vector3(entity.X, entity.Y, entity.Z);
                 if (_player.Entity == player)
                     player.Model.GetComponent<MeshRenderer>().material.color = Color.blue;
+            }
+            else
+            {
+                Object obj = Resources.Load("Enemy");
+                GameObject go = Object.Instantiate(obj) as GameObject;
+                Entity enemy = go.GetOrAddComponent<Entity>();
+                
+                go.name = $"{entity.PlayerId}";
+                enemy.Id = entity.PlayerId;
+                _enemyDic.Add(entity.PlayerId, enemy);
+                
+                // TODO : 나중에 Entity 메소드로 빼기
+                Object model = Resources.Load("Enemy Model");
+                Object hpBar = Resources.Load("Hp");
+                GameObject modelGameObject = GameObject.Instantiate(model, enemy.transform, true) as GameObject;
+                GameObject hpBarCanvas = GameObject.Instantiate(hpBar, enemy.transform, true) as GameObject;
+                UIHpBar uiHpBar = hpBarCanvas.GetComponentInChildren<UIHpBar>();
+                
+                enemy.Model = modelGameObject;
+                
+                enemy.HpChanged += uiHpBar.Change;
+                enemy.transform.position = new Vector3(entity.X, entity.Y, entity.Z);
             }
         }
         
@@ -175,6 +227,7 @@ public class GameManager
     
     public void Attack(S_Attack packet)
     {
+        // 공격 수행자 체크 & 공격 피격자 체크
         if (_playerDic.TryGetValue(packet.PlayerId, out var entity) && _playerDic.TryGetValue(packet.TargetId, out var target))
         {
             entity.Attack(packet.Damage);

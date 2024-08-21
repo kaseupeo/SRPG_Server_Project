@@ -8,6 +8,7 @@ public class GameRoom : IJobQueue
     private JobQueue _jobQueue = new JobQueue();
     private List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
 
+    private List<Entity> _entityList = new List<Entity>();
     public TurnSystem TurnSystem = new TurnSystem();
 
     public void Push(Action job)
@@ -104,13 +105,52 @@ public class GameRoom : IJobQueue
             });
         }
 
+        Console.WriteLine("Map");
         Broadcast(mapData.Write());
         
         // 몬스터 생성
-        
+        // TODO : 몬스터 개수 나중에 빼기
+        int enemyCount = 1;
+        int enemyId = 10;
+        Random random = new Random();
+        // S_EnemyData enemyData = new S_EnemyData();
+        // for (int i = 0; i < enemyCount; i++)
+        // {
+        //     enemyData.enemyList.Add(new S_EnemyData.Enemy()
+        //     {
+        //         EnemyId = enemyId++,
+        //         X = random.Next(0, 10),
+        //         Y = 0,
+        //         Z = random.Next(0, 10)
+        //     });
+        // }
+        //
+        // Console.WriteLine("enemyData");
+        // Broadcast(enemyData.Write());
         
         // 게임 시작
         S_StartGame startGame = new S_StartGame();
+        
+        // TEST : Enemy Create
+        for (int i = 0; i < enemyCount; i++)
+        {
+            int id = enemyId++;
+            Entity entity = new Entity(id);
+            _entityList.Add(entity);
+            entity.Init();
+            TurnSystem.Add(entity);
+            int x = random.Next(0, 10);
+            int z = random.Next(0, 10);
+            entity.Position = (x, 0, z);
+            startGame.entityList.Add(new S_StartGame.Entity()
+            {
+                PlayerId = id,
+                X = x,
+                Y = 0,
+                Z = z
+            });
+            Console.WriteLine($"enemy Create : {id}");
+        }
         foreach (ClientSession clientSession in _sessionList)
         {
             // TEST : 테스트용 랜덤 속도 스탯 주기
@@ -126,11 +166,9 @@ public class GameRoom : IJobQueue
             });
         }
         
+        Console.WriteLine("startGame");
         Broadcast(startGame.Write());
         
-        // MEMO : 그냥 딜레이 줌 
-        Thread.Sleep(2000);
-
         StartTurn();
     }
 
