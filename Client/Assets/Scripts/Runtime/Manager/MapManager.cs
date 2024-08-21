@@ -25,6 +25,7 @@ public class MapManager
         Cube cube = go.GetOrAddComponent<Cube>();
 
         cube.transform.position = new Vector3(position.x, position.y - 1, position.z);
+        cube.name = $"{cube.transform.position}";
         _cubeList.Add(cube);
     }
 }

@@ -106,6 +106,10 @@ public class GameRoom : IJobQueue
 
         Broadcast(mapData.Write());
         
+        // 몬스터 생성
+        
+        
+        // 게임 시작
         S_StartGame startGame = new S_StartGame();
         foreach (ClientSession clientSession in _sessionList)
         {

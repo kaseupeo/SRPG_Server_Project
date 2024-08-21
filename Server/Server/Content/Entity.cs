@@ -127,18 +127,33 @@ public class Entity(int id)
         if (!_moveRangePosition.Contains(position))
             return;
         
+        var aStar = new AStar(MapManager.Instance.Map);
+        List<(int x, int y, int z)> path = aStar.FindPath(_position, position);
         Position = position;
 
         // TODO : 이동 가능하면 A* 알고리즘을 통해 경로 보내기
         // TEST : 간단한 테스트를 위해 받은 위치로 순간이동 시킴
         S_Move move = new S_Move();
         move.PlayerId = Id;
-        move.pathList.Add(new S_Move.Path()
+
+        Console.WriteLine("path : ");
+        foreach ((int x, int y, int z) tuple in path)
         {
-            X = _position.X,
-            Y = _position.Y,
-            Z = _position.Z,
-        });
+            move.pathList.Add(new S_Move.Path()
+            {
+                X = tuple.x,
+                Y = tuple.y,
+                Z = tuple.z,
+            });
+            Console.WriteLine($"({tuple.x}, {tuple.y}, {tuple.z}), ");
+        }
+        
+        // move.pathList.Add(new S_Move.Path()
+        // {
+        //     X = _position.X,
+        //     Y = _position.Y,
+        //     Z = _position.Z,
+        // });
         
         Room.Broadcast(move.Write());
     }
