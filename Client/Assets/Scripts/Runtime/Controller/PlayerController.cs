@@ -47,7 +47,6 @@ public class PlayerController : BaseController
         C_EndTurn endTurn = new C_EndTurn();
         Managers.Network.Send(endTurn.Write());
         Entity.State = State.Waiting;
-        
     }
     
     public void ShowRange()

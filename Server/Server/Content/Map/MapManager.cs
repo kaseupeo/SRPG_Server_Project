@@ -30,6 +30,19 @@ public class MapManager
         _map = map;
     }
 
+    public (int, int, int) RandomMapPosition()
+    {
+        List<(int, int, int)> trueKeys = _map.Where(kvp => kvp.Value).Select(kvp => kvp.Key).ToList();
+
+        if (trueKeys.Count <= 0)
+            return (0, 0, 0);
+        
+        // 랜덤 객체 생성
+        Random random = new Random();
+        
+        return trueKeys[random.Next(trueKeys.Count)];
+    }
+    
     public void UpdateMap()
     {
         

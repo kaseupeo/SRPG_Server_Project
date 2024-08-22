@@ -4,20 +4,20 @@
 <PDL>
     <!-- 게임 접속 -->
     <packet name="S_EnterGame">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
     </packet>
     <!-- 게임 나가기 -->
     <packet name="C_LeaveGame">
     </packet>
     <!-- 게임 나간것을 모두에게 알리기 -->
     <packet name="S_LeaveGame">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
     </packet>
     <!-- 접속한 플레이어 리스트 -->
     <packet name="S_PlayerList">
         <list name="Player">
             <bool name="IsSelf"/>
-            <int name="PlayerId"/>
+            <int name="EntityId"/>
         </list>
     </packet>
     
@@ -33,16 +33,6 @@
         </list>
     </packet>
     
-    <!-- 적 데이터 -->
-    <packet name="S_EnemyData">
-        <list name="Enemy">
-            <int name="EnemyId"/>
-            <int name="X"/>
-            <int name="Y"/>
-            <int name="Z"/>
-        </list>
-    </packet>
-    
 <!--    
 턴 진행 방식
 게임 접속 -> 게임 준비 -> 게임 시작 -> 턴 시작 -> 턴 종료 
@@ -54,14 +44,14 @@
     <!-- 게임 준비 상태 알리기 -->
     <packet name="S_ReadyGame">
         <list name="Player">
-            <int name="PlayerId"/>
+            <int name="EntityId"/>
             <bool name="IsReady"/>
         </list>
     </packet>
     <!-- 게임 시작 -->
     <packet name="S_StartGame">
         <list name="Entity">
-            <int name="PlayerId"/>
+            <int name="EntityId"/>
             <float name="X"/>
             <float name="Y"/>
             <float name="Z"/>
@@ -69,7 +59,7 @@
     </packet>
     <!-- 턴 시작 -->
     <packet name="S_StartTurn">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
     </packet>
     <!-- 턴 종료 -->
     <packet name="C_EndTurn">
@@ -91,7 +81,7 @@
     </packet>
     <!-- 이동/공격 범위 리스트 -->
     <packet name="S_ActionRange">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
         <list name="Position">
             <float name="X"/>
             <float name="Y"/>
@@ -100,7 +90,7 @@
     </packet>
     <!-- 이동 경로 리스트 -->
     <packet name="S_Move">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
         <list name="Path">
             <float name="X"/>
             <float name="Y"/>
@@ -110,7 +100,7 @@
     
     <!-- 공격 -->
     <packet name="S_Attack">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
         <int name="TargetId"/>
         <int name="MaxHp"/>
         <int name="Hp"/>
@@ -119,7 +109,7 @@
     
     <!-- 사망 -->
     <packet name="S_Dead">
-        <int name="PlayerId"/>
+        <int name="EntityId"/>
         
     </packet>
 </PDL>

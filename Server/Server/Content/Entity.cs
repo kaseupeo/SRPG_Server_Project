@@ -1,11 +1,12 @@
 ﻿namespace Server;
 
-public class Entity(int id)
+public class Entity(int id, bool isPlayer = true)
 {
     // Entity ID
     public int Id { get; set; } = id;
     public GameRoom Room { get; set; }
     public EntityState State { get; set; }
+    public bool IsPlayer { get; set; } = isPlayer;
 
     // Entity Position
     private (int X, int Y, int Z) _position;
@@ -34,7 +35,7 @@ public class Entity(int id)
     private int _movePoint;
     private int _damage;
     private int _defense;
-    private (int, int) _attackRange;
+    private (int min, int max) _attackRange;
 
     public int Speed => _speed;
     
@@ -43,7 +44,8 @@ public class Entity(int id)
         _moveRangePosition = new HashSet<(int, int, int)>();
         _attackRangePosition = new HashSet<(int, int, int)>();
         Random random = new Random();
-        
+
+        Position = MapManager.Instance.RandomMapPosition();
         _maxHp = 20;
         _hp = _maxHp;
         _speed = random.Next(100);
@@ -59,6 +61,41 @@ public class Entity(int id)
         _moveRangePosition = UpdateActionRange(_movePoint);
     }
 
+    public void UpdateEnemy()
+    {
+        Update();
+
+        List<Entity> list = Room.EntityList.Where(e => e.IsPlayer).ToList();
+        HashSet<(int, int, int)> range = new HashSet<(int, int, int)>();
+        
+        foreach (Entity target in list) 
+            range.UnionWith(UpdateActionRange(target.Position, _attackRange.min));
+
+        var set = _moveRangePosition.Intersect(range).ToList();
+
+        if (set.Count == 0)
+        {
+            Console.WriteLine("enemy no move end turn");
+            State = EntityState.Waiting;
+            Room.EndTurn();
+            return;
+        }
+        
+        Move(set[0]);
+        
+        _attackRangePosition = UpdateActionRange(_attackRange.min);
+
+        foreach (Entity entity in list)
+        {
+            if (_attackRangePosition.Contains(entity.Position))
+            {
+                Attack(entity.Position);
+                Room.EndTurn();
+                return;
+            }
+        }
+    }
+
     public void ChangeState(C_PlayerState packet)
     {
         State = (EntityState)packet.State;
@@ -68,13 +105,13 @@ public class Entity(int id)
                 ShowMoveRange();
                 break;
             case EntityState.Move:
-                Move(packet);
+                Move(((int, int, int))(packet.X, packet.Y, packet.Z));
                 break;
             case EntityState.ShowRange | EntityState.Attack:
                 ShowAttackRange();
                 break;
             case EntityState.Attack:
-                Attack(packet);
+                Attack(((int, int, int))(packet.X, packet.Y, packet.Z));
                 break;
             default:
                 break;
@@ -83,8 +120,13 @@ public class Entity(int id)
     
     private HashSet<(int, int, int)> UpdateActionRange(int range)
     {
+        return UpdateActionRange((_position.X, _position.Y, _position.Z), range);
+    }
+    
+    private HashSet<(int, int, int)> UpdateActionRange((int, int, int) position, int range)
+    {
         PathFind pathFind = new PathFind();
-        HashSet<(int, int, int)> list = pathFind.FindTile((_position.X, _position.Y, _position.Z), range);
+        HashSet<(int, int, int)> list = pathFind.FindTile(position, range);
 
         return list;
     }
@@ -92,7 +134,7 @@ public class Entity(int id)
     private void ShowRange(HashSet<(int, int, int)> range)
     {
         S_ActionRange moveRange = new S_ActionRange();
-        moveRange.PlayerId = Id;
+        moveRange.EntityId = Id;
         
         foreach ((int x, int y, int z) tuple in range)
         {
@@ -106,34 +148,36 @@ public class Entity(int id)
 
         Room.Broadcast(moveRange.Write());
     }
-    
-    public void ShowMoveRange()
+
+    private void ShowMoveRange()
     {
         ShowRange(_moveRangePosition);
     }
 
-    public void ShowAttackRange()
+    private void ShowAttackRange()
     {
-        _attackRangePosition = UpdateActionRange(_attackRange.Item1);
+        _attackRangePosition = UpdateActionRange(_attackRange.min);
 
         ShowRange(_attackRangePosition);
     }
     
-    public void Move(C_PlayerState packet)
+    private void Move((int, int, int) position)
     {
-        (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
-
         // 이동 가능한 위치인지 체크
         if (!_moveRangePosition.Contains(position))
             return;
         
+        Dictionary<(int, int, int), bool> map = new Dictionary<(int, int, int), bool>();
+        foreach (var item in _moveRangePosition) 
+            map[item] = true;
+        
         // MEMO : ASTAR
-        AStar aStar = new AStar(MapManager.Instance.Map);
+        AStar aStar = new AStar(map);
         List<(int x, int y, int z)> path = aStar.FindPath(_position, position);
         Position = position;
 
         S_Move move = new S_Move();
-        move.PlayerId = Id;
+        move.EntityId = Id;
 
         Console.WriteLine("path : ");
         foreach ((int x, int y, int z) tuple in path)
@@ -150,10 +194,9 @@ public class Entity(int id)
         Room.Broadcast(move.Write());
     }
     
-    public void Attack(C_PlayerState packet)
+    private void Attack((int, int, int) position)
     {
         Console.WriteLine("Attack In");
-        (int, int, int) position = ((int, int, int))(packet.X, packet.Y, packet.Z);
         
         // 공격범위에 있는지 체크
         if (!_attackRangePosition.Contains(position))
@@ -169,7 +212,7 @@ public class Entity(int id)
         
         S_Attack attack = new S_Attack
         {
-            PlayerId = Id,
+            EntityId = Id,
             TargetId = target.Id,
             Damage = damage,
             MaxHp = target._maxHp,
@@ -186,12 +229,12 @@ public class Entity(int id)
         State = EntityState.Waiting;
     }
 
-    public void Dead()
+    private void Dead()
     {
         Room.TurnSystem.Remove(this);
 
         S_Dead dead = new S_Dead();
-        dead.PlayerId = Id;
+        dead.EntityId = Id;
 
         Room.Broadcast(dead.Write());
     }

@@ -9,6 +9,7 @@ public class GameRoom : IJobQueue
     private List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
 
     private List<Entity> _entityList = new List<Entity>();
+    public IReadOnlyList<Entity> EntityList => _entityList;
     public TurnSystem TurnSystem = new TurnSystem();
 
     public void Push(Action job)
@@ -45,7 +46,7 @@ public class GameRoom : IJobQueue
             playerList.playerList.Add(new S_PlayerList.Player
             {
                 IsSelf = (clientSession == session),
-                PlayerId = clientSession.SessionId,
+                EntityId = clientSession.SessionId,
             });
         }
 
@@ -53,7 +54,7 @@ public class GameRoom : IJobQueue
         
         // 새로 들어온 플레이어 입장을 모두에게 알림
         S_EnterGame enterGame = new S_EnterGame();
-        enterGame.PlayerId = session.SessionId;
+        enterGame.EntityId = session.SessionId;
         
         Broadcast(enterGame.Write());
     }
@@ -66,7 +67,7 @@ public class GameRoom : IJobQueue
         // TODO 
         // 모두에게 알림
         S_LeaveGame leaveGame = new S_LeaveGame();
-        leaveGame.PlayerId = session.SessionId;
+        leaveGame.EntityId = session.SessionId;
         Broadcast(leaveGame.Write());
     }
 
@@ -81,7 +82,7 @@ public class GameRoom : IJobQueue
             readyGame.playerList.Add(new S_ReadyGame.Player()
             {
                 IsReady = clientSession.IsReady,
-                PlayerId = clientSession.SessionId,
+                EntityId = clientSession.SessionId,
             });
         }
         Broadcast(readyGame.Write());
@@ -107,62 +108,38 @@ public class GameRoom : IJobQueue
 
         Console.WriteLine("Map");
         Broadcast(mapData.Write());
-        
-        // 몬스터 생성
+
         // TODO : 몬스터 개수 나중에 빼기
         int enemyCount = 1;
         int enemyId = 10;
-        Random random = new Random();
-        // S_EnemyData enemyData = new S_EnemyData();
-        // for (int i = 0; i < enemyCount; i++)
-        // {
-        //     enemyData.enemyList.Add(new S_EnemyData.Enemy()
-        //     {
-        //         EnemyId = enemyId++,
-        //         X = random.Next(0, 10),
-        //         Y = 0,
-        //         Z = random.Next(0, 10)
-        //     });
-        // }
-        //
-        // Console.WriteLine("enemyData");
-        // Broadcast(enemyData.Write());
         
         // 게임 시작
         S_StartGame startGame = new S_StartGame();
-        
-        // TEST : Enemy Create
+
+        foreach (ClientSession clientSession in _sessionList)
+        {
+            _entityList.Add(clientSession.Entity);
+        }
+        // 몬스터 생성
         for (int i = 0; i < enemyCount; i++)
         {
             int id = enemyId++;
-            Entity entity = new Entity(id);
+            Entity entity = new Entity(id, false);
+            entity.Room = this;
             _entityList.Add(entity);
+        }
+
+        foreach (Entity entity in _entityList)
+        {
             entity.Init();
             TurnSystem.Add(entity);
-            int x = random.Next(0, 10);
-            int z = random.Next(0, 10);
-            entity.Position = (x, 0, z);
-            startGame.entityList.Add(new S_StartGame.Entity()
-            {
-                PlayerId = id,
-                X = x,
-                Y = 0,
-                Z = z
-            });
-            Console.WriteLine($"enemy Create : {id}");
-        }
-        foreach (ClientSession clientSession in _sessionList)
-        {
-            // TEST : 테스트용 랜덤 속도 스탯 주기
-            clientSession.Entity.Init();
-            TurnSystem.Add(clientSession.Entity);
             
             startGame.entityList.Add(new S_StartGame.Entity()
             {
-                PlayerId = clientSession.Entity.Id,
-                X = 0,
-                Y = 0,
-                Z = 0,
+                EntityId = entity.Id,
+                X = entity.Position.X,
+                Y = entity.Position.Y,
+                Z = entity.Position.Z
             });
         }
         
@@ -175,8 +152,17 @@ public class GameRoom : IJobQueue
     public void StartTurn()
     {
         S_StartTurn startTurn = new S_StartTurn();
-        startTurn.PlayerId = TurnSystem.CurrentTurn().Id;
-        TurnSystem.CurrentTurn().Update();
+        startTurn.EntityId = TurnSystem.CurrentTurn().Id;
+        
+        if (TurnSystem.CurrentTurn().IsPlayer)
+        {
+            TurnSystem.CurrentTurn().Update();
+        }
+        else
+        {
+            TurnSystem.CurrentTurn().UpdateEnemy();
+        }
+        
         Broadcast(startTurn.Write());
     }
     
@@ -184,7 +170,12 @@ public class GameRoom : IJobQueue
     {
         if (session.SessionId != TurnSystem.CurrentTurn().Id)
             return;
-        
+
+        EndTurn();
+    }
+
+    public void EndTurn()
+    {
         TurnSystem.NextTurn();
         StartTurn();
     }
