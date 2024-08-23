@@ -11,4 +11,10 @@ public class Define
         EndTurn     = 1 << 3,
         Waiting     = 1 << 4,
     }
+    
+    public enum EntityType
+    {
+        Player = 0,
+        Enemy = 1,
+    }
 }

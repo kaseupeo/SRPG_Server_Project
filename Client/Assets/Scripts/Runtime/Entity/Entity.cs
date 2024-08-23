@@ -10,6 +10,7 @@ public class Entity : MonoBehaviour
     public ValueChangedHandler HpChanged;
     
     public int Id { get; set; }
+    public Define.EntityType Type { get; set; }
     public GameObject Model { get; set; }
     public Define.EntityState State { get; set; }
 

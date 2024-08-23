@@ -452,6 +452,7 @@ public class S_StartGame : IPacket
 	public class Entity
 	{
 	    public int EntityId;
+		public int Type;
 		public float X;
 		public float Y;
 		public float Z;
@@ -460,6 +461,9 @@ public class S_StartGame : IPacket
 	    {
 	        
 			this.EntityId = BitConverter.ToInt32(s.Slice(count, s.Length - count));
+			count += sizeof(int);
+			
+			this.Type = BitConverter.ToInt32(s.Slice(count, s.Length - count));
 			count += sizeof(int);
 			
 			this.X = BitConverter.ToSingle(s.Slice(count, s.Length - count));
@@ -477,6 +481,9 @@ public class S_StartGame : IPacket
 	        bool success = true;
 	        
 			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.EntityId);
+			count += sizeof(int);
+			
+			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.Type);
 			count += sizeof(int);
 			
 			success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.X);

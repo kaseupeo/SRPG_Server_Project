@@ -52,6 +52,7 @@
     <packet name="S_StartGame">
         <list name="Entity">
             <int name="EntityId"/>
+            <int name="Type"/>
             <float name="X"/>
             <float name="Y"/>
             <float name="Z"/>

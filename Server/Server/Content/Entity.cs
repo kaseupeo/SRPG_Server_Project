@@ -1,12 +1,13 @@
 ﻿namespace Server;
 
-public class Entity(int id, bool isPlayer = true)
+public class Entity(int id, EntityType type = EntityType.Player)
 {
     // Entity ID
     public int Id { get; set; } = id;
+    public EntityType Type { get; set; } = type;
     public GameRoom Room { get; set; }
     public EntityState State { get; set; }
-    public bool IsPlayer { get; set; } = isPlayer;
+    // public bool IsPlayer { get; set; } = isPlayer;
 
     // Entity Position
     private (int X, int Y, int Z) _position;
@@ -65,7 +66,7 @@ public class Entity(int id, bool isPlayer = true)
     {
         Update();
 
-        List<Entity> list = Room.EntityList.Where(e => e.IsPlayer).ToList();
+        List<Entity> list = Room.EntityList.Where(e => e.Type == EntityType.Player).ToList();
         HashSet<(int, int, int)> range = new HashSet<(int, int, int)>();
         
         foreach (Entity target in list) 

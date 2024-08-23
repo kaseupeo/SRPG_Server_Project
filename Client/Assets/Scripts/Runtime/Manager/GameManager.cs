@@ -25,12 +25,6 @@ public class GameManager
         foreach (S_PlayerList.Player p in packet.playerList)
         {
             Entity go = CreateEntityObject(p.EntityId);
-            // GameObject go = Object.Instantiate(obj) as GameObject;
-            // Entity entity = go.GetOrAddComponent<Entity>();
-            //
-            // entity.Id = p.EntityId;
-            // go.name = $"{p.EntityId}";
-            // _entityDic.Add(p.EntityId, entity);
             
             if (p.IsSelf)
             {
@@ -51,13 +45,6 @@ public class GameManager
             return;
 
         CreateEntityObject(packet.EntityId);
-        // Object obj = Resources.Load("Entity");
-        // GameObject go = Object.Instantiate(obj) as GameObject;
-        // Entity entity = go.GetOrAddComponent<Entity>();
-        //
-        // go.name = $"{packet.EntityId}";
-        // entity.Id = packet.EntityId;
-        // _entityDic.Add(packet.EntityId, entity);
 
         Debug.Log($"Enter Game : {packet.EntityId}");
     }
@@ -107,11 +94,9 @@ public class GameManager
                 entity = CreateEntityObject(e.EntityId);
             }
 
-            CreateEntityModelObject(entity);
+            entity.Type = (Define.EntityType)e.Type;
+            CreateEntityModel(entity);
             entity.transform.position = new Vector3(e.X, e.Y, e.Z);
-            
-            if (_player.Entity == entity)
-                entity.Model.GetComponent<MeshRenderer>().material.color = Color.blue;
         }
         
         IsStartGame = true;
@@ -200,9 +185,10 @@ public class GameManager
         return entity;
     }
 
-    private void CreateEntityModelObject(Entity entity)
+    private void CreateEntityModel(Entity entity)
     {
-        Object model = Resources.Load("Player Model");
+        Object model = CreateEntityModelObject(entity.Type);
+        
         Object hpBar = Resources.Load("Hp");
         GameObject modelGameObject = GameObject.Instantiate(model, entity.transform, true) as GameObject;
         GameObject hpBarCanvas = GameObject.Instantiate(hpBar, entity.transform, true) as GameObject;
@@ -210,6 +196,22 @@ public class GameManager
 
         entity.Model = modelGameObject;
         entity.HpChanged += uiHpBar.Change;
+        
+        if (_player.Entity == entity)
+            entity.Model.GetComponent<MeshRenderer>().material.color = Color.blue;
+    }
+
+    private Object CreateEntityModelObject(Define.EntityType type)
+    {
+        switch (type)
+        {
+            case Define.EntityType.Player:
+                return Resources.Load("Player Model");
+            case Define.EntityType.Enemy:
+                return Resources.Load("Enemy Model");
+            default:
+                return null;
+        }
     }
     
     public void Clear()

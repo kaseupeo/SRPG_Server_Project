@@ -124,7 +124,7 @@ public class GameRoom : IJobQueue
         for (int i = 0; i < enemyCount; i++)
         {
             int id = enemyId++;
-            Entity entity = new Entity(id, false);
+            Entity entity = new Entity(id, EntityType.Enemy);
             entity.Room = this;
             _entityList.Add(entity);
         }
@@ -137,6 +137,7 @@ public class GameRoom : IJobQueue
             startGame.entityList.Add(new S_StartGame.Entity()
             {
                 EntityId = entity.Id,
+                Type = (int)entity.Type,
                 X = entity.Position.X,
                 Y = entity.Position.Y,
                 Z = entity.Position.Z
@@ -153,14 +154,15 @@ public class GameRoom : IJobQueue
     {
         S_StartTurn startTurn = new S_StartTurn();
         startTurn.EntityId = TurnSystem.CurrentTurn().Id;
-        
-        if (TurnSystem.CurrentTurn().IsPlayer)
+
+        switch (TurnSystem.CurrentTurn().Type)
         {
-            TurnSystem.CurrentTurn().Update();
-        }
-        else
-        {
-            TurnSystem.CurrentTurn().UpdateEnemy();
+            case EntityType.Player:
+                TurnSystem.CurrentTurn().Update();
+                break;
+            case EntityType.Enemy:
+                TurnSystem.CurrentTurn().UpdateEnemy();
+                break;
         }
         
         Broadcast(startTurn.Write());
